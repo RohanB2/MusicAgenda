@@ -4,56 +4,63 @@
 //
 //  Created by Rohan Batra on 6/15/26.
 //
-
 import SwiftUI
 import SwiftData
 
+enum NavigationItem: Hashable {
+    case inbox
+    case inProgress
+    case archive
+    case search
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var albums: [Album]
+    
+    // This tracks what the user clicked in the sidebar
+    @State private var selectedNav: NavigationItem? = .inbox
 
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+            List(selection: $selectedNav) {
+                Section("Library") {
+                    Label("Inbox / Queue", systemImage: "tray")
+                        .tag(NavigationItem.inbox)
+                    Label("In Progress", systemImage: "play.circle")
+                        .tag(NavigationItem.inProgress)
+                    Label("Archive", systemImage: "checkmark.circle")
+                        .tag(NavigationItem.archive)
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+                
+                Section("Discover") {
+                    Label("Search", systemImage: "magnifyingglass")
+                        .tag(NavigationItem.search)
                 }
             }
+            .navigationTitle("Music Agenda")
+            .listStyle(.sidebar)
         } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            // Depending on what is selected in the sidebar, show a different view!
+            switch selectedNav {
+            case .inbox:
+                NavigationStack {
+                    InboxView()
+                }
+            case .inProgress:
+                Text("In Progress View")
+                    .font(.largeTitle).foregroundStyle(.secondary)
+            case .archive:
+                Text("Archive View")
+                    .font(.largeTitle).foregroundStyle(.secondary)
+            case .search:
+                NavigationStack {
+                    SearchView()
+                }
+            case nil:
+                Text("Select an item from the sidebar")
+                    .foregroundStyle(.secondary)
             }
         }
     }
-}
-
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
