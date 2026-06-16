@@ -1,10 +1,3 @@
-//
-//  LibraryView.swift
-//  MusicAgenda
-//
-//  Created by Rohan Batra on 6/16/26.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -14,17 +7,37 @@ enum LibraryFilter {
     case archive
 }
 
+enum LibraryPath: Equatable {
+    case savedAlbum(Album)
+    case artist(Int, String) // artistId, artistName
+    case searchAlbum(ITunesResult)
+    
+    static func == (lhs: LibraryPath, rhs: LibraryPath) -> Bool {
+        switch (lhs, rhs) {
+        case (.savedAlbum(let l), .savedAlbum(let r)): return l.id == r.id
+        case (.artist(let lId, _), .artist(let rId, _)): return lId == rId
+        case (.searchAlbum(let l), .searchAlbum(let r)): return l.collectionId == r.collectionId
+        default: return false
+        }
+    }
+}
+
 struct LibraryView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Album.dateAdded, order: .reverse) private var allAlbums: [Album]
     
     let filter: LibraryFilter
+    @State private var searchText = ""
     
-
-    @State private var selectedAlbum: Album?
+    @State private var path: [LibraryPath] = []
     
     var filteredAlbums: [Album] {
-        allAlbums.filter { album in
+        let textFiltered = searchText.isEmpty ? allAlbums : allAlbums.filter { album in
+            album.title.localizedCaseInsensitiveContains(searchText) ||
+            album.artist.localizedCaseInsensitiveContains(searchText)
+        }
+        
+        return textFiltered.filter { album in
             let listenedCount = album.tracks.filter { $0.isListened }.count
             let totalCount = album.tracks.count > 0 ? album.tracks.count : 1
             switch filter {
@@ -39,10 +52,30 @@ struct LibraryView: View {
 
     var body: some View {
         ZStack {
-            if let album = selectedAlbum {
-                // Show the detail view and fade it in
-                SavedAlbumDetailView(album: album)
+            if let current = path.last {
+                switch current {
+                case .savedAlbum(let album):
+                    SavedAlbumDetailView(album: album) { artistId, artistName in
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            path.append(.artist(artistId, artistName))
+                        }
+                    }
                     .transition(.opacity)
+                case .artist(let artistId, let artistName):
+                    ArtistDetailView(artistId: artistId, artistName: artistName) { albumResult in
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            path.append(.searchAlbum(albumResult))
+                        }
+                    }
+                    .transition(.opacity)
+                case .searchAlbum(let result):
+                    SearchAlbumDetailView(result: result) { artistId, artistName in
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            path.append(.artist(artistId, artistName))
+                        }
+                    }
+                    .transition(.opacity)
+                }
             } else {
                 // Show the Grid and fade it in
                 ScrollView {
@@ -59,10 +92,9 @@ struct LibraryView: View {
                     } else {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(filteredAlbums) { album in
-                                // NEW: A normal button that triggers our fade animation
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.25)) {
-                                        selectedAlbum = album
+                                        path.append(.savedAlbum(album))
                                     }
                                 } label: {
                                     SavedAlbumCardView(album: album)
@@ -76,16 +108,15 @@ struct LibraryView: View {
                 .transition(.opacity)
             }
         }
-        // Hide the title if we are looking at an album
-        .navigationTitle(selectedAlbum != nil ? "" : navigationTitle)
-        
-        // NEW: Add a Back button to the top left toolbar if an album is open!
+        .navigationTitle(path.isEmpty ? navigationTitle : "")
+        .searchable(text: $searchText, placement: .toolbar, prompt: "Search Library")
         .toolbar {
-            if selectedAlbum != nil {
-                // By removing .buttonStyle(.plain) and using .title3, it looks perfect!
+            if !path.isEmpty {
                 ToolbarItem(placement: .navigation) {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.25)) { selectedAlbum = nil }
+                        withAnimation(.easeInOut(duration: 0.25)) { 
+                            _ = path.removeLast()
+                        }
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.title3)
@@ -97,9 +128,9 @@ struct LibraryView: View {
     
     private var navigationTitle: String {
         switch filter {
-        case .inbox: return "Inbox / Queue"
+        case .inbox: return "Agenda"
         case .inProgress: return "In Progress"
-        case .archive: return "Archive"
+        case .archive: return "Completed"
         }
     }
     private var emptyStateIcon: String {
@@ -111,7 +142,7 @@ struct LibraryView: View {
     }
     private var emptyStateMessage: String {
         switch filter {
-        case .inbox: return "Your Inbox is Empty"
+        case .inbox: return "Your Agenda is Empty"
         case .inProgress: return "No Albums in Progress"
         case .archive: return "You haven't finished any albums yet!"
         }
@@ -134,9 +165,17 @@ struct SavedAlbumCardView: View {
             .scaleEffect(isHovering ? 1.02 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)
             
-            Text(album.title)
-                .font(.headline)
-                .lineLimit(1)
+            HStack(spacing: 4) {
+                Text(album.title)
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                if album.isExplicit {
+                    Image(systemName: "e.square.fill")
+                        .foregroundStyle(.secondary)
+                        .font(.caption2)
+                }
+            }
             
             Text(album.artist)
                 .font(.subheadline)

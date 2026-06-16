@@ -21,10 +21,13 @@ struct ITunesResult: Codable {
     let artistName: String?
     let artworkUrl100: String?
     let releaseDate: String?
-    
     let trackId: Int?
     let trackName: String?
     let trackNumber: Int?
+    let trackTimeMillis: Int?
+    
+    let trackExplicitness: String?
+    let collectionExplicitness: String?
 }
 
 @Observable
@@ -33,33 +36,34 @@ class ITunesAPI {
     // 1. Search for Albums (Smart Search)
     func searchAlbums(query: String) async throws -> [ITunesResult] {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              // Changed 'entity=album' to 'media=music' so it searches songs too!
-              let url = URL(string: "https://itunes.apple.com/search?term=\(encodedQuery)&media=music&limit=50") else {
+              // Changed back to 'entity=album' because searching songs clogs the 50 limit with random obscure singles
+              let url = URL(string: "https://itunes.apple.com/search?term=\(encodedQuery)&entity=album&limit=50") else {
             return []
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
         let response = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
+        // We deduplicate by collectionName to avoid clean/explicit duplicates of the same album
+        // BUT we must preserve the original array order because iTunes sorts by relevance/popularity!
+        var uniqueAlbumsByName: [String: ITunesResult] = [:]
+        var orderedResults: [ITunesResult] = []
         
-        // Because a song search returns multiple songs from the same album,
-        // we use a Dictionary to ensure we only show each unique album once.
-        var uniqueAlbums: [Int: ITunesResult] = [:]
         for result in response.results {
-            if let collectionId = result.collectionId {
-                if uniqueAlbums[collectionId] == nil {
-                    uniqueAlbums[collectionId] = result
+            guard let name = result.collectionName?.lowercased() else { continue }
+            
+            if uniqueAlbumsByName[name] == nil {
+                uniqueAlbumsByName[name] = result
+                orderedResults.append(result)
+            } else if result.collectionExplicitness == "explicit" {
+                // Prefer explicit version if there's a duplicate, and update it in place to preserve rank
+                if let index = orderedResults.firstIndex(where: { $0.collectionName?.lowercased() == name }) {
+                    orderedResults[index] = result
                 }
+                uniqueAlbumsByName[name] = result
             }
         }
         
-        // Sort by release date (newest first)
-        let sortedAlbums = uniqueAlbums.values.sorted { result1, result2 in
-            let date1 = result1.releaseDate ?? ""
-            let date2 = result2.releaseDate ?? ""
-            return date1 > date2 // Descending order
-        }
-        
-        return sortedAlbums
+        return orderedResults
     }
     
     // 2. Fetch tracks for a specific album
@@ -71,8 +75,19 @@ class ITunesAPI {
         let (data, _) = try await URLSession.shared.data(from: url)
         let response = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
         
-        // Filter out the album itself from the results (we only want the tracks)
-        return response.results.filter { $0.wrapperType == "track" }
+        // Filter out the album itself and deduplicate tracks by trackNumber (since iTunes sometimes returns clean/explicit tracks together)
+        var uniqueTracks: [Int: ITunesResult] = [:]
+        for result in response.results where result.wrapperType == "track" {
+            if let trackNumber = result.trackNumber {
+                if uniqueTracks[trackNumber] == nil {
+                    uniqueTracks[trackNumber] = result
+                } else if result.trackExplicitness == "explicit" {
+                    uniqueTracks[trackNumber] = result
+                }
+            }
+        }
+        
+        return uniqueTracks.values.sorted { ($0.trackNumber ?? 0) < ($1.trackNumber ?? 0) }
     }
     
     // 3. Fetch albums for a specific artist
@@ -83,10 +98,18 @@ class ITunesAPI {
         
         let (data, _) = try await URLSession.shared.data(from: url)
         let response = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
+        // Deduplicate by name for artist lookups too
+        var uniqueAlbumsByName: [String: ITunesResult] = [:]
+        for result in response.results where result.wrapperType == "collection" {
+            guard let name = result.collectionName?.lowercased() else { continue }
+            if uniqueAlbumsByName[name] == nil {
+                uniqueAlbumsByName[name] = result
+            } else if result.collectionExplicitness == "explicit" {
+                uniqueAlbumsByName[name] = result
+            }
+        }
         
-        // Filter out the artist object from the results
-        let albums = response.results.filter { $0.wrapperType == "collection" }
-        return albums.sorted { ($0.releaseDate ?? "") > ($1.releaseDate ?? "") }
+        return uniqueAlbumsByName.values.sorted { ($0.releaseDate ?? "") > ($1.releaseDate ?? "") }
     }
     
     // 4. Fetch recent popular releases

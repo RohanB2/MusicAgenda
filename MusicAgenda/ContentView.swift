@@ -1,26 +1,41 @@
-//
-//  ContentView.swift
-//  MusicAgenda
-//
-//  Created by Rohan Batra on 6/15/26.
-//
-
 import SwiftUI
 import SwiftData
 
 enum NavigationItem: Hashable {
-    case home
     case inbox
     case inProgress
     case archive
-    case search
+    case home
 }
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var albums: [Album]
     
-    @State private var selectedNav: NavigationItem? = .home // Default to Home now
+    @State private var selectedNav: NavigationItem? = .home
+    
+    private var inboxCount: Int {
+        albums.filter { album in
+            let listenedCount = album.tracks.filter { $0.isListened }.count
+            return listenedCount == 0
+        }.count
+    }
+    
+    private var inProgressCount: Int {
+        albums.filter { album in
+            let listenedCount = album.tracks.filter { $0.isListened }.count
+            let totalCount = album.tracks.count > 0 ? album.tracks.count : 1
+            return listenedCount > 0 && listenedCount < totalCount
+        }.count
+    }
+    
+    private var archiveCount: Int {
+        albums.filter { album in
+            let listenedCount = album.tracks.filter { $0.isListened }.count
+            let totalCount = album.tracks.count > 0 ? album.tracks.count : 1
+            return listenedCount == totalCount
+        }.count
+    }
     
     var body: some View {
         NavigationSplitView {
@@ -28,48 +43,46 @@ struct ContentView: View {
                 Section("Discover") {
                     Label("Home", systemImage: "house.fill")
                         .tag(NavigationItem.home)
-                    Label("Search", systemImage: "magnifyingglass")
-                        .tag(NavigationItem.search)
                 }
                 
                 Section("Library") {
-                    Label("Inbox / Queue", systemImage: "tray.fill")
+                    Label("Agenda", systemImage: "tray.fill")
+                        .badge(inboxCount)
                         .tag(NavigationItem.inbox)
                     Label("In Progress", systemImage: "play.circle.fill")
+                        .badge(inProgressCount)
                         .tag(NavigationItem.inProgress)
-                    Label("Archive", systemImage: "archivebox.fill")
+                    Label("Completed", systemImage: "archivebox.fill")
+                        .badge(archiveCount)
                         .tag(NavigationItem.archive)
                 }
             }
             .navigationTitle("Music Agenda")
             .listStyle(.sidebar)
         } detail: {
-            // A ZStack allows the old view to fade out while the new one fades in right on top of it!
-            ZStack {
-                switch selectedNav {
-                case .home:
-                    HomeView()
-                        .transition(.opacity)
-                case .inbox:
-                    NavigationStack { LibraryView(filter: .inbox) }
-                        .transition(.opacity)
-                case .inProgress:
-                    NavigationStack { LibraryView(filter: .inProgress) }
-                        .transition(.opacity)
-                case .archive:
-                    NavigationStack { LibraryView(filter: .archive) }
-                        .transition(.opacity)
-                case .search:
-                    NavigationStack { SearchView() }
-                        .transition(.opacity)
-                case nil:
-                    Text("Select an item from the sidebar")
-                        .foregroundStyle(.secondary)
-                        .transition(.opacity)
+            NavigationStack {
+                ZStack {
+                    switch selectedNav {
+                    case .inbox:
+                        LibraryView(filter: .inbox)
+                            .transition(.opacity)
+                    case .inProgress:
+                        LibraryView(filter: .inProgress)
+                            .transition(.opacity)
+                    case .archive:
+                        LibraryView(filter: .archive)
+                            .transition(.opacity)
+                    case .home:
+                        SearchView()
+                            .transition(.opacity)
+                    case nil:
+                        Text("Select an item from the sidebar")
+                            .foregroundStyle(.secondary)
+                            .transition(.opacity)
+                    }
                 }
+                .animation(.easeInOut(duration: 0.3), value: selectedNav)
             }
-            // This tells the ZStack to animate any changes to selectedNav with a smooth 0.3s fade
-            .animation(.easeInOut(duration: 0.3), value: selectedNav)
         }
     }
 }

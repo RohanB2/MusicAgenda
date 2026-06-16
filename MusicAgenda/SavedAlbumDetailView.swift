@@ -10,6 +10,7 @@ import SwiftData
 
 struct SavedAlbumDetailView: View {
     let album: Album
+    var onArtistSelect: ((Int, String) -> Void)?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
@@ -46,11 +47,42 @@ struct SavedAlbumDetailView: View {
                         .shadow(color: .black.opacity(0.4), radius: 20, y: 10)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(album.title)
-                                .font(.system(size: 40, weight: .heavy))
-                            Text(album.artist)
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                            HStack(alignment: .top) {
+                                Text(album.title)
+                                    .font(.system(size: 40, weight: .heavy))
+                                if album.isExplicit {
+                                    Image(systemName: "e.square.fill")
+                                        .foregroundStyle(.secondary)
+                                        .padding(.top, 12)
+                                }
+                            }
+                            HStack(alignment: .firstTextBaseline) {
+                                if let artistId = album.artistId {
+                                    Button {
+                                        onArtistSelect?(artistId, album.artist)
+                                    } label: {
+                                        Text(album.artist)
+                                            .font(.system(size: 24, weight: .semibold))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                } else {
+                                    Text(album.artist)
+                                        .font(.system(size: 24, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                                
+                                Text(formattedYear)
+                                    .font(.title3)
+                                    .foregroundStyle(.secondary.opacity(0.8))
+                            }
+                            
+                            if !totalDurationString.isEmpty {
+                                Text(totalDurationString)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
                             
                             // NEW DELETE BUTTON
                             Button(role: .destructive) {
@@ -58,13 +90,10 @@ struct SavedAlbumDetailView: View {
                                 dismiss() // Close the view and go back
                             } label: {
                                 Label("Remove from Agenda", systemImage: "trash")
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.red.opacity(0.1))
-                                    .cornerRadius(8)
+                                    .font(.subheadline.bold())
                             }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.red)
+                            .buttonStyle(.borderedProminent)
+                            .tint(.red)
                             .padding(.top, 5)
                             
                             // Progress Bar Logic
@@ -119,7 +148,18 @@ struct SavedAlbumDetailView: View {
                                     .foregroundStyle(track.isListened ? .secondary : .primary)
                                     .font(.system(size: 16, weight: .medium))
                                 
+                                if track.isExplicit {
+                                    Image(systemName: "e.square.fill")
+                                        .foregroundStyle(.secondary)
+                                        .font(.caption)
+                                }
+                                
                                 Spacer()
+                                
+                                Text(formattedTrackLength(millis: track.trackTimeMillis))
+                                    .font(.subheadline.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                                    .padding(.trailing, 10)
                                 
                                 // Animated Like Button
                                 Button {
@@ -142,6 +182,15 @@ struct SavedAlbumDetailView: View {
                                 Divider().padding(.leading, 60)
                             }
                         }
+                        
+                        if let exactDate = formattedExactDate {
+                            Text(exactDate)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 20)
+                                .padding(.bottom, 40) // Increased padding
+                                .padding(.horizontal, 20)
+                        }
                     }
                     // This is the magic macOS frosted glass material!
                     .background(.ultraThinMaterial)
@@ -152,6 +201,43 @@ struct SavedAlbumDetailView: View {
                 }
             }
         }
+    }
+    
+    // Formatting Helpers
+    private var formattedYear: String {
+        guard let dateString = album.releaseDateString else { return "" }
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: dateString) {
+            let outFormatter = DateFormatter()
+            outFormatter.dateFormat = "yyyy"
+            return outFormatter.string(from: date)
+        }
+        return ""
+    }
+    
+    private var formattedExactDate: String? {
+        guard let dateString = album.releaseDateString else { return nil }
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: dateString) {
+            let outFormatter = DateFormatter()
+            outFormatter.dateStyle = .long
+            return outFormatter.string(from: date)
+        }
+        return nil
+    }
+    
+    private var totalDurationString: String {
+        guard let totalMillis = album.totalTimeMillis else { return "" }
+        let minutes = totalMillis / 60000
+        return "\(minutes) mins"
+    }
+    
+    private func formattedTrackLength(millis: Int?) -> String {
+        guard let millis = millis, millis > 0 else { return "" }
+        let totalSeconds = millis / 1000
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }
 

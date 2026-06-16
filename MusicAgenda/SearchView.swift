@@ -20,6 +20,25 @@ extension ITunesResult: Equatable {
     }
 }
 
+struct GenreCategory: Identifiable {
+    let id = UUID()
+    let title: String
+    let colors: [Color]
+}
+
+let genericGenres: [GenreCategory] = [
+    GenreCategory(title: "Pop", colors: [.pink, .red]),
+    GenreCategory(title: "Hip-Hop", colors: [.blue, .cyan]),
+    GenreCategory(title: "Alternative", colors: [.yellow, .orange]),
+    GenreCategory(title: "Rock", colors: [.red, .orange]),
+    GenreCategory(title: "R&B", colors: [.purple, .indigo]),
+    GenreCategory(title: "Dance", colors: [.green, .mint]),
+    GenreCategory(title: "Country", colors: [.orange, .yellow]),
+    GenreCategory(title: "Jazz", colors: [.teal, .blue]),
+    GenreCategory(title: "Classical", colors: [.gray, .black]),
+    GenreCategory(title: "Electronic", colors: [.green, .black])
+]
+
 struct SearchView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var searchText = ""
@@ -30,6 +49,9 @@ struct SearchView: View {
     
     let columns = [
         GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 20)
+    ]
+    let categoryColumns = [
+        GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 20)
     ]
 
     var body: some View {
@@ -61,16 +83,38 @@ struct SearchView: View {
                         Text("No results found.")
                             .foregroundStyle(.secondary)
                             .padding(.top, 50)
-                    } else {
-                        if searchText.isEmpty && !searchResults.isEmpty {
-                            HStack {
-                                Text("New Releases")
-                                    .font(.title.bold())
-                                Spacer()
+                    } else if searchText.isEmpty && searchResults.isEmpty {
+                        // BROWSE CATEGORIES
+                        VStack(alignment: .leading) {
+                            Text("Browse Categories")
+                                .font(.title.bold())
+                                .padding(.horizontal)
+                                .padding(.top, 20)
+                            
+                            LazyVGrid(columns: categoryColumns, spacing: 20) {
+                                ForEach(genericGenres) { genre in
+                                    Button {
+                                        searchText = genre.title
+                                        performSearch()
+                                    } label: {
+                                        ZStack(alignment: .bottomLeading) {
+                                            LinearGradient(colors: genre.colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+                                            
+                                            Text(genre.title)
+                                                .font(.system(size: 20, weight: .bold))
+                                                .foregroundStyle(.white)
+                                                .padding()
+                                        }
+                                        .frame(height: 120)
+                                        .cornerRadius(12)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
                             }
-                            .padding(.horizontal)
+                            .padding()
                         }
-                        
+                    } else {
+                        // SEARCH RESULTS
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(searchResults, id: \.collectionId) { result in
                                 Button {
@@ -89,8 +133,8 @@ struct SearchView: View {
                 .transition(.opacity)
             }
         }
-        .navigationTitle(path.isEmpty ? "Search Albums" : "")
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search by album or artist")
+        .navigationTitle(path.isEmpty ? "Home" : "")
+        .searchable(text: $searchText, placement: .toolbar, prompt: "Search Apple Music")
         .onSubmit(of: .search) {
             performSearch()
         }
@@ -108,9 +152,11 @@ struct SearchView: View {
                 }
             }
         }
-        .task {
-            if searchResults.isEmpty && searchText.isEmpty {
-                await loadRecentReleases()
+        .onChange(of: searchText) { oldValue, newValue in
+            if newValue.isEmpty {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    searchResults.removeAll()
+                }
             }
         }
     }
@@ -131,20 +177,6 @@ struct SearchView: View {
                 print("Search failed: \(error)")
                 await MainActor.run { self.isSearching = false }
             }
-        }
-    }
-    
-    private func loadRecentReleases() async {
-        isSearching = true
-        do {
-            let results = try await ITunesAPI.shared.fetchRecentReleases()
-            await MainActor.run {
-                self.searchResults = results
-                self.isSearching = false
-            }
-        } catch {
-            print("Failed to load recent releases: \(error)")
-            await MainActor.run { self.isSearching = false }
         }
     }
 }
@@ -181,9 +213,17 @@ struct AlbumCardView: View {
             .scaleEffect(isHovering ? 1.02 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)
             
-            Text(result.collectionName ?? "Unknown Album")
-                .font(.headline)
-                .lineLimit(1)
+            HStack(spacing: 4) {
+                Text(result.collectionName ?? "Unknown Album")
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                if result.collectionExplicitness == "explicit" {
+                    Image(systemName: "e.square.fill")
+                        .foregroundStyle(.secondary)
+                        .font(.caption2)
+                }
+            }
             
             Text(result.artistName ?? "Unknown Artist")
                 .font(.subheadline)

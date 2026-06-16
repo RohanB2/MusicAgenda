@@ -13,7 +13,11 @@ final class Album {
     @Attribute(.unique) var id: String
     var title: String
     var artist: String
+    var artistId: Int?
     var artworkUrlString: String?
+    var releaseDateString: String?
+    var totalTimeMillis: Int?
+    var isExplicit: Bool = false
     
     // A relationship tying this album to multiple tracks. If we delete the album, delete its tracks too.
     @Relationship(deleteRule: .cascade, inverse: \Track.album)
@@ -21,11 +25,15 @@ final class Album {
     
     var dateAdded: Date
     
-    init(id: String, title: String, artist: String, artworkUrlString: String? = nil, dateAdded: Date = .now) {
+    init(id: String, title: String, artist: String, artistId: Int? = nil, artworkUrlString: String? = nil, releaseDateString: String? = nil, totalTimeMillis: Int? = nil, isExplicit: Bool = false, dateAdded: Date = .now) {
         self.id = id
         self.title = title
         self.artist = artist
+        self.artistId = artistId
         self.artworkUrlString = artworkUrlString
+        self.releaseDateString = releaseDateString
+        self.totalTimeMillis = totalTimeMillis
+        self.isExplicit = isExplicit
         self.dateAdded = dateAdded
     }
 }
@@ -38,13 +46,17 @@ final class Track {
     var isListened: Bool
     var isLiked: Bool
     var playlistTags: [String]
+    var trackTimeMillis: Int?
+    var isExplicit: Bool = false
     
     var album: Album?
     
-    init(id: String, title: String, trackNumber: Int, isListened: Bool = false, isLiked: Bool = false, playlistTags: [String] = []) {
+    init(id: String, title: String, trackNumber: Int, trackTimeMillis: Int? = nil, isExplicit: Bool = false, isListened: Bool = false, isLiked: Bool = false, playlistTags: [String] = []) {
         self.id = id
         self.title = title
         self.trackNumber = trackNumber
+        self.trackTimeMillis = trackTimeMillis
+        self.isExplicit = isExplicit
         self.isListened = isListened
         self.isLiked = isLiked
         self.playlistTags = playlistTags

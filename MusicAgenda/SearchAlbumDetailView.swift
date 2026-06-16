@@ -35,21 +35,42 @@ struct SearchAlbumDetailView: View {
                     .shadow(radius: 10)
                     
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(result.collectionName ?? "Unknown Album")
-                            .font(.system(size: 32, weight: .bold))
-                        if let artistId = result.artistId, let artistName = result.artistName {
-                            Button {
-                                onArtistSelect?(artistId, artistName)
-                            } label: {
-                                Text(artistName)
+                        HStack(alignment: .top) {
+                            Text(result.collectionName ?? "Unknown Album")
+                                .font(.system(size: 32, weight: .bold))
+                            if result.collectionExplicitness == "explicit" {
+                                Image(systemName: "e.square.fill")
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 8)
+                            }
+                        }
+                        
+                        HStack(alignment: .firstTextBaseline) {
+                            if let artistId = result.artistId, let artistName = result.artistName {
+                                Button {
+                                    onArtistSelect?(artistId, artistName)
+                                } label: {
+                                    Text(artistName)
+                                        .font(.title2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                Text(result.artistName ?? "Unknown Artist")
                                     .font(.title2)
                                     .foregroundStyle(.secondary)
                             }
-                            .buttonStyle(.plain)
-                        } else {
-                            Text(result.artistName ?? "Unknown Artist")
-                                .font(.title2)
+                            
+                            Text(formattedYear)
+                                .font(.title3)
+                                .foregroundStyle(.secondary.opacity(0.8))
+                        }
+                        
+                        if !totalDurationString.isEmpty {
+                            Text(totalDurationString)
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
+                                .padding(.top, 2)
                         }
                         
                         Button(action: addToAgenda) {
@@ -80,11 +101,28 @@ struct SearchAlbumDetailView: View {
                                     .frame(width: 30, alignment: .trailing)
                                     .foregroundStyle(.secondary)
                                 Text(track.trackName ?? "Unknown Track")
+                                if track.trackExplicitness == "explicit" {
+                                    Image(systemName: "e.square.fill")
+                                        .foregroundStyle(.secondary)
+                                        .font(.caption)
+                                }
                                 Spacer()
+                                Text(formattedTrackLength(millis: track.trackTimeMillis))
+                                    .font(.subheadline.monospacedDigit())
+                                    .foregroundStyle(.secondary)
                             }
                             .padding(.vertical, 4)
                             .padding(.horizontal)
                             Divider()
+                        }
+                        
+                        if let exactDate = formattedExactDate {
+                            Text(exactDate)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 20)
+                                .padding(.bottom, 40) // Increased padding
+                                .padding(.horizontal)
                         }
                     }
                 }
@@ -118,20 +156,26 @@ struct SearchAlbumDetailView: View {
     private func addToAgenda() {
         guard let albumId = result.collectionId else { return }
         
+        let totalMillis = tracks.compactMap { $0.trackTimeMillis }.reduce(0, +)
+        
         let newAlbum = Album(
             id: String(albumId),
             title: result.collectionName ?? "Unknown",
             artist: result.artistName ?? "Unknown",
-            artworkUrlString: result.artworkUrl100
+            artistId: result.artistId,
+            artworkUrlString: result.artworkUrl100,
+            releaseDateString: result.releaseDate,
+            totalTimeMillis: totalMillis > 0 ? totalMillis : nil,
+            isExplicit: result.collectionExplicitness == "explicit"
         )
         
-        // Convert API tracks into SwiftData Tracks
-        for trackResult in tracks {
-            guard let trackId = trackResult.trackId else { continue }
+        for track in tracks {
             let newTrack = Track(
-                id: String(trackId),
-                title: trackResult.trackName ?? "Unknown",
-                trackNumber: trackResult.trackNumber ?? 0
+                id: String(track.trackId ?? UUID().hashValue),
+                title: track.trackName ?? "Unknown",
+                trackNumber: track.trackNumber ?? 0,
+                trackTimeMillis: track.trackTimeMillis,
+                isExplicit: track.trackExplicitness == "explicit"
             )
             newAlbum.tracks.append(newTrack)
         }
@@ -139,5 +183,43 @@ struct SearchAlbumDetailView: View {
         // Save to Database
         modelContext.insert(newAlbum)
         isAdded = true
+    }
+    
+    // Formatting Helpers
+    private var formattedYear: String {
+        guard let dateString = result.releaseDate else { return "" }
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: dateString) {
+            let outFormatter = DateFormatter()
+            outFormatter.dateFormat = "yyyy"
+            return outFormatter.string(from: date)
+        }
+        return ""
+    }
+    
+    private var formattedExactDate: String? {
+        guard let dateString = result.releaseDate else { return nil }
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: dateString) {
+            let outFormatter = DateFormatter()
+            outFormatter.dateStyle = .long
+            return outFormatter.string(from: date)
+        }
+        return nil
+    }
+    
+    private var totalDurationString: String {
+        let totalMillis = tracks.compactMap { $0.trackTimeMillis }.reduce(0, +)
+        if totalMillis == 0 { return "" }
+        let minutes = totalMillis / 60000
+        return "\(minutes) mins"
+    }
+    
+    private func formattedTrackLength(millis: Int?) -> String {
+        guard let millis = millis, millis > 0 else { return "" }
+        let totalSeconds = millis / 1000
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }
