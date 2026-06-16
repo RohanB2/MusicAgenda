@@ -1,12 +1,24 @@
-//
-//  SearchView.swift
-//  MusicAgenda
-//
-//  Created by Rohan Batra on 6/15/26.
-//
-
 import SwiftUI
 import SwiftData
+
+enum SearchPath: Equatable {
+    case album(ITunesResult)
+    case artist(Int, String) // artistId, artistName
+    
+    static func == (lhs: SearchPath, rhs: SearchPath) -> Bool {
+        switch (lhs, rhs) {
+        case (.album(let l), .album(let r)): return l.collectionId == r.collectionId
+        case (.artist(let lId, _), .artist(let rId, _)): return lId == rId
+        default: return false
+        }
+    }
+}
+
+extension ITunesResult: Equatable {
+    public static func == (lhs: ITunesResult, rhs: ITunesResult) -> Bool {
+        return lhs.collectionId == rhs.collectionId && lhs.trackId == rhs.trackId
+    }
+}
 
 struct SearchView: View {
     @Environment(\.modelContext) private var modelContext
@@ -14,42 +26,99 @@ struct SearchView: View {
     @State private var searchResults: [ITunesResult] = []
     @State private var isSearching = false
     
-    // A flexible grid layout for macOS
+    @State private var path: [SearchPath] = []
+    
     let columns = [
         GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 20)
     ]
 
     var body: some View {
-        ScrollView {
-            if isSearching {
-                ProgressView()
-                    .padding(.top, 50)
-            } else if searchResults.isEmpty && !searchText.isEmpty {
-                Text("No results found.")
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 50)
-            } else {
-                LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(searchResults, id: \.collectionId) { result in
-                        NavigationLink(destination: SearchAlbumDetailView(result: result)) {
-                            AlbumCardView(result: result)
+        ZStack {
+            if let current = path.last {
+                switch current {
+                case .album(let result):
+                    SearchAlbumDetailView(result: result) { artistId, artistName in
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            path.append(.artist(artistId, artistName))
                         }
-                        .buttonStyle(.plain) // This keeps our nice hover animations intact!
+                    }
+                    .transition(.opacity)
+                case .artist(let artistId, let artistName):
+                    ArtistDetailView(artistId: artistId, artistName: artistName) { albumResult in
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            path.append(.album(albumResult))
+                        }
+                    }
+                    .transition(.opacity)
+                }
+            } else {
+                // The Grid
+                ScrollView {
+                    if isSearching {
+                        ProgressView()
+                            .padding(.top, 50)
+                    } else if searchResults.isEmpty && !searchText.isEmpty {
+                        Text("No results found.")
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 50)
+                    } else {
+                        if searchText.isEmpty && !searchResults.isEmpty {
+                            HStack {
+                                Text("New Releases")
+                                    .font(.title.bold())
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(searchResults, id: \.collectionId) { result in
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        path.append(.album(result))
+                                    }
+                                } label: {
+                                    AlbumCardView(result: result)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding()
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
+        .navigationTitle(path.isEmpty ? "Search Albums" : "")
+        .searchable(text: $searchText, placement: .toolbar, prompt: "Search by album or artist")
+        .onSubmit(of: .search) {
+            performSearch()
+        }
+        .toolbar {
+            if !path.isEmpty {
+                ToolbarItem(placement: .navigation) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            _ = path.removeLast()
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.title3)
                     }
                 }
             }
         }
-        .navigationTitle("Search Albums")
-        // This adds the native search bar in the top right corner!
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search by album or artist")
-        .onSubmit(of: .search) {
-            performSearch()
+        .task {
+            if searchResults.isEmpty && searchText.isEmpty {
+                await loadRecentReleases()
+            }
         }
     }
     
     private func performSearch() {
         guard !searchText.isEmpty else { return }
         isSearching = true
+        withAnimation(.easeInOut(duration: 0.25)) { path.removeAll() } // Pop back to grid
         
         Task {
             do {
@@ -64,6 +133,20 @@ struct SearchView: View {
             }
         }
     }
+    
+    private func loadRecentReleases() async {
+        isSearching = true
+        do {
+            let results = try await ITunesAPI.shared.fetchRecentReleases()
+            await MainActor.run {
+                self.searchResults = results
+                self.isSearching = false
+            }
+        } catch {
+            print("Failed to load recent releases: \(error)")
+            await MainActor.run { self.isSearching = false }
+        }
+    }
 }
 
 // A beautiful card to display each search result
@@ -73,7 +156,6 @@ struct AlbumCardView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            // Artwork Image loading directly from the URL
             AsyncImage(url: ITunesAPI.shared.highResArtworkUrl(from: result.artworkUrl100)) { phase in
                 switch phase {
                 case .empty:
@@ -95,7 +177,6 @@ struct AlbumCardView: View {
                 }
             }
             .cornerRadius(12)
-            // A subtle shadow and scale effect when you hover your mouse over it!
             .shadow(color: .black.opacity(isHovering ? 0.3 : 0.1), radius: isHovering ? 10 : 5, y: isHovering ? 5 : 2)
             .scaleEffect(isHovering ? 1.02 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)

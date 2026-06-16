@@ -17,6 +17,7 @@ struct ITunesResult: Codable {
     
     let collectionId: Int?
     let collectionName: String?
+    let artistId: Int?
     let artistName: String?
     let artworkUrl100: String?
     let releaseDate: String?
@@ -72,6 +73,35 @@ class ITunesAPI {
         
         // Filter out the album itself from the results (we only want the tracks)
         return response.results.filter { $0.wrapperType == "track" }
+    }
+    
+    // 3. Fetch albums for a specific artist
+    func fetchAlbums(forArtistId artistId: Int) async throws -> [ITunesResult] {
+        guard let url = URL(string: "https://itunes.apple.com/lookup?id=\(artistId)&entity=album") else {
+            return []
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
+        
+        // Filter out the artist object from the results
+        let albums = response.results.filter { $0.wrapperType == "collection" }
+        return albums.sorted { ($0.releaseDate ?? "") > ($1.releaseDate ?? "") }
+    }
+    
+    // 4. Fetch recent popular releases
+    func fetchRecentReleases() async throws -> [ITunesResult] {
+        // The most reliable way to get popular recent releases from iTunes API is to search for a broad term
+        // like "2024" or use the top charts. Apple Music RSS is alternative but requires custom models.
+        // Let's use a broad term search with &entity=album and limit
+        guard let url = URL(string: "https://itunes.apple.com/search?term=new+music&entity=album&limit=25") else {
+            return []
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
+        
+        return response.results.sorted { ($0.releaseDate ?? "") > ($1.releaseDate ?? "") }
     }
     
     // Helper to get high-res artwork

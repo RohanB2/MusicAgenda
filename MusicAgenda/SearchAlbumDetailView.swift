@@ -12,6 +12,7 @@ struct SearchAlbumDetailView: View {
     @Environment(\.modelContext) private var modelContext
     
     let result: ITunesResult
+    var onArtistSelect: ((Int, String) -> Void)?
     @State private var tracks: [ITunesResult] = []
     @State private var isLoading = true
     @State private var isAdded = false
@@ -36,9 +37,20 @@ struct SearchAlbumDetailView: View {
                     VStack(alignment: .leading, spacing: 5) {
                         Text(result.collectionName ?? "Unknown Album")
                             .font(.system(size: 32, weight: .bold))
-                        Text(result.artistName ?? "Unknown Artist")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
+                        if let artistId = result.artistId, let artistName = result.artistName {
+                            Button {
+                                onArtistSelect?(artistId, artistName)
+                            } label: {
+                                Text(artistName)
+                                    .font(.title2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        } else {
+                            Text(result.artistName ?? "Unknown Artist")
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                        }
                         
                         Button(action: addToAgenda) {
                             Label(isAdded ? "Added to Agenda" : "Add to Agenda", systemImage: isAdded ? "checkmark" : "plus")
