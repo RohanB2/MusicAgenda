@@ -14,7 +14,8 @@ struct MusicAgendaApp: App {
         let schema = Schema([
             Album.self, Track.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let sharedURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.rohanbatra.MusicAgenda")!.appendingPathComponent("MusicAgenda.sqlite")
+        let modelConfiguration = ModelConfiguration(schema: schema, url: sharedURL)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

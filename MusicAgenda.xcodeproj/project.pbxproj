@@ -6,19 +6,90 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		976FCC552FE32A0B00811595 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976FCC542FE32A0B00811595 /* WidgetKit.framework */; };
+		976FCC572FE32A0B00811595 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976FCC562FE32A0B00811595 /* SwiftUI.framework */; };
+		976FCC662FE32A0C00811595 /* MusicAgendaWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		976FCC642FE32A0C00811595 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97F54DD82FE0B46B00E7D6E7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 976FCC512FE32A0B00811595;
+			remoteInfo = MusicAgendaWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		976FCC6B2FE32A0C00811595 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				976FCC662FE32A0C00811595 /* MusicAgendaWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MusicAgendaWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		976FCC542FE32A0B00811595 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		976FCC562FE32A0B00811595 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		976FCC6C2FE32A2A00811595 /* MusicAgendaWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MusicAgendaWidgetExtension.entitlements; sourceTree = "<group>"; };
 		97F54DE02FE0B46B00E7D6E7 /* MusicAgenda.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicAgenda.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		976FCC672FE32A0C00811595 /* Exceptions for "MusicAgendaWidget" folder in "MusicAgendaWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 976FCC512FE32A0B00811595 /* MusicAgendaWidgetExtension */;
+		};
+		976FCC6E2FE32B0400811595 /* Exceptions for "MusicAgenda" folder in "MusicAgendaWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models.swift,
+			);
+			target = 976FCC512FE32A0B00811595 /* MusicAgendaWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		976FCC582FE32A0B00811595 /* MusicAgendaWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				976FCC672FE32A0C00811595 /* Exceptions for "MusicAgendaWidget" folder in "MusicAgendaWidgetExtension" target */,
+			);
+			path = MusicAgendaWidget;
+			sourceTree = "<group>";
+		};
 		97F54DE22FE0B46B00E7D6E7 /* MusicAgenda */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				976FCC6E2FE32B0400811595 /* Exceptions for "MusicAgenda" folder in "MusicAgendaWidgetExtension" target */,
+			);
 			path = MusicAgenda;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		976FCC4F2FE32A0B00811595 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				976FCC572FE32A0B00811595 /* SwiftUI.framework in Frameworks */,
+				976FCC552FE32A0B00811595 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97F54DDD2FE0B46B00E7D6E7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -29,10 +100,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		976FCC532FE32A0B00811595 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				976FCC542FE32A0B00811595 /* WidgetKit.framework */,
+				976FCC562FE32A0B00811595 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		97F54DD72FE0B46B00E7D6E7 = {
 			isa = PBXGroup;
 			children = (
+				976FCC6C2FE32A2A00811595 /* MusicAgendaWidgetExtension.entitlements */,
 				97F54DE22FE0B46B00E7D6E7 /* MusicAgenda */,
+				976FCC582FE32A0B00811595 /* MusicAgendaWidget */,
+				976FCC532FE32A0B00811595 /* Frameworks */,
 				97F54DE12FE0B46B00E7D6E7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				97F54DE02FE0B46B00E7D6E7 /* MusicAgenda.app */,
+				976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +132,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		976FCC512FE32A0B00811595 /* MusicAgendaWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 976FCC682FE32A0C00811595 /* Build configuration list for PBXNativeTarget "MusicAgendaWidgetExtension" */;
+			buildPhases = (
+				976FCC4E2FE32A0B00811595 /* Sources */,
+				976FCC4F2FE32A0B00811595 /* Frameworks */,
+				976FCC502FE32A0B00811595 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				976FCC582FE32A0B00811595 /* MusicAgendaWidget */,
+			);
+			name = MusicAgendaWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = MusicAgendaWidgetExtension;
+			productReference = 976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		97F54DDF2FE0B46B00E7D6E7 /* MusicAgenda */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97F54DED2FE0B46C00E7D6E7 /* Build configuration list for PBXNativeTarget "MusicAgenda" */;
@@ -55,10 +161,12 @@
 				97F54DDC2FE0B46B00E7D6E7 /* Sources */,
 				97F54DDD2FE0B46B00E7D6E7 /* Frameworks */,
 				97F54DDE2FE0B46B00E7D6E7 /* Resources */,
+				976FCC6B2FE32A0C00811595 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				976FCC652FE32A0C00811595 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				97F54DE22FE0B46B00E7D6E7 /* MusicAgenda */,
@@ -80,6 +188,9 @@
 				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
+					976FCC512FE32A0B00811595 = {
+						CreatedOnToolsVersion = 26.5;
+					};
 					97F54DDF2FE0B46B00E7D6E7 = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -100,11 +211,19 @@
 			projectRoot = "";
 			targets = (
 				97F54DDF2FE0B46B00E7D6E7 /* MusicAgenda */,
+				976FCC512FE32A0B00811595 /* MusicAgendaWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		976FCC502FE32A0B00811595 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97F54DDE2FE0B46B00E7D6E7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +234,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		976FCC4E2FE32A0B00811595 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97F54DDC2FE0B46B00E7D6E7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +250,83 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		976FCC652FE32A0C00811595 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 976FCC512FE32A0B00811595 /* MusicAgendaWidgetExtension */;
+			targetProxy = 976FCC642FE32A0C00811595 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		976FCC692FE32A0C00811595 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MusicAgendaWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KHK3836CHD;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MusicAgendaWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MusicAgendaWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rohanbatra.MusicAgenda.MusicAgendaWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		976FCC6A2FE32A0C00811595 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MusicAgendaWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KHK3836CHD;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MusicAgendaWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MusicAgendaWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rohanbatra.MusicAgenda.MusicAgendaWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		97F54DEB2FE0B46C00E7D6E7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -248,9 +450,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MusicAgendaIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MusicAgenda/MusicAgenda.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KHK3836CHD;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -289,9 +494,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MusicAgendaIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MusicAgenda/MusicAgenda.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KHK3836CHD;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -328,6 +536,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		976FCC682FE32A0C00811595 /* Build configuration list for PBXNativeTarget "MusicAgendaWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				976FCC692FE32A0C00811595 /* Debug */,
+				976FCC6A2FE32A0C00811595 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		97F54DDB2FE0B46B00E7D6E7 /* Build configuration list for PBXProject "MusicAgenda" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

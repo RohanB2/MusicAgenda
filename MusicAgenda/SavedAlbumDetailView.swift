@@ -195,6 +195,18 @@ struct SavedAlbumDetailView: View {
                                 
                                 Spacer()
                                 
+                                Button {
+                                    if let url = URL(string: "music://music.apple.com/album/id\(album.id)?i=\(track.id)") {
+                                        NSWorkspace.shared.open(url)
+                                    }
+                                } label: {
+                                    Image(systemName: "play.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.trailing, 8)
+                                
                                 Text(formattedTrackLength(millis: track.trackTimeMillis))
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(.secondary)

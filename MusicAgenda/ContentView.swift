@@ -2,10 +2,11 @@ import SwiftUI
 import SwiftData
 
 enum NavigationItem: Hashable {
+    case home
+    case search
     case inbox
     case inProgress
     case archive
-    case home
 }
 
 struct ContentView: View {
@@ -41,8 +42,10 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $selectedNav) {
                 Section("Discover") {
-                    Label("Home", systemImage: "house.fill")
+                    Label("Dashboard", systemImage: "house.fill")
                         .tag(NavigationItem.home)
+                    Label("Search", systemImage: "magnifyingglass")
+                        .tag(NavigationItem.search)
                 }
                 
                 Section("Library") {
@@ -60,29 +63,30 @@ struct ContentView: View {
             .navigationTitle("Music Agenda")
             .listStyle(.sidebar)
         } detail: {
-            NavigationStack {
-                ZStack {
-                    switch selectedNav {
-                    case .inbox:
-                        LibraryView(filter: .inbox)
-                            .transition(.opacity)
-                    case .inProgress:
-                        LibraryView(filter: .inProgress)
-                            .transition(.opacity)
-                    case .archive:
-                        LibraryView(filter: .archive)
-                            .transition(.opacity)
-                    case .home:
-                        SearchView()
-                            .transition(.opacity)
-                    case nil:
-                        Text("Select an item from the sidebar")
-                            .foregroundStyle(.secondary)
-                            .transition(.opacity)
-                    }
+            ZStack {
+                switch selectedNav {
+                case .home:
+                    HomeDashboardView(selectedNav: $selectedNav)
+                        .transition(.opacity)
+                case .search:
+                    SearchView()
+                        .transition(.opacity)
+                case .inbox:
+                    LibraryView(filter: .inbox)
+                        .transition(.opacity)
+                case .inProgress:
+                    LibraryView(filter: .inProgress)
+                        .transition(.opacity)
+                case .archive:
+                    LibraryView(filter: .archive)
+                        .transition(.opacity)
+                case nil:
+                    Text("Select an item from the sidebar")
+                        .foregroundStyle(.secondary)
+                        .transition(.opacity)
                 }
-                .animation(.easeInOut(duration: 0.3), value: selectedNav)
             }
+            .animation(.easeInOut(duration: 0.3), value: selectedNav)
         }
     }
 }

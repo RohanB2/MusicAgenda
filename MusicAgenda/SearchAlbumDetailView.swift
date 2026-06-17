@@ -100,6 +100,7 @@ struct SearchAlbumDetailView: View {
                                 Text("\(track.trackNumber ?? 0)")
                                     .frame(width: 30, alignment: .trailing)
                                     .foregroundStyle(.secondary)
+                                
                                 Text(track.trackName ?? "Unknown Track")
                                 if track.trackExplicitness == "explicit" {
                                     Image(systemName: "e.square.fill")
@@ -107,6 +108,19 @@ struct SearchAlbumDetailView: View {
                                         .font(.caption)
                                 }
                                 Spacer()
+                                
+                                Button {
+                                    if let albumId = result.collectionId, let trackId = track.trackId, let url = URL(string: "music://music.apple.com/album/id\(albumId)?i=\(trackId)") {
+                                        NSWorkspace.shared.open(url)
+                                    }
+                                } label: {
+                                    Image(systemName: "play.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.trailing, 8)
+                                
                                 Text(formattedTrackLength(millis: track.trackTimeMillis))
                                     .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(.secondary)
