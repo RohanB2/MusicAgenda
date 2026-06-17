@@ -162,15 +162,51 @@ struct SearchView: View {
     }
     
     private func performSearch() {
-        guard !searchText.isEmpty else { return }
+        guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         isSearching = true
-        withAnimation(.easeInOut(duration: 0.25)) { path.removeAll() } // Pop back to grid
+        withAnimation(.easeInOut(duration: 0.25)) { path.removeAll() }
         
         Task {
             do {
-                let results = try await ITunesAPI.shared.searchAlbums(query: searchText)
+                // Run artist search and album search in parallel
+                async let artistResults = ITunesAPI.shared.searchArtists(query: searchText)
+                async let albumResults = ITunesAPI.shared.searchAlbums(query: searchText)
+                
+                let (artists, albums) = try await (artistResults, albumResults)
+                
+                let query = searchText.lowercased()
+                
+                // Check if any returned artist is a strong match for what was typed
+                var artistAlbums: [ITunesResult] = []
+                if let matchedArtist = artists.first(where: { artist in
+                    let name = (artist.artistName ?? "").lowercased()
+                    // "Drake" contains "Drake", "Cry baby Vince Staples" contains "Vince Staples"
+                    return query.contains(name) || name.contains(query)
+                }), let artistId = matchedArtist.artistId {
+                    // Fetch their full discography (sorted newest first)
+                    artistAlbums = try await ITunesAPI.shared.fetchAlbums(forArtistId: artistId)
+                }
+                
+                // Merge: artist discography first, then remaining album results (deduplicated)
+                var seen = Set<Int>()
+                var merged: [ITunesResult] = []
+                
+                for album in artistAlbums {
+                    if let id = album.collectionId, !seen.contains(id) {
+                        seen.insert(id)
+                        merged.append(album)
+                    }
+                }
+                
+                for album in albums {
+                    if let id = album.collectionId, !seen.contains(id) {
+                        seen.insert(id)
+                        merged.append(album)
+                    }
+                }
+                
                 await MainActor.run {
-                    self.searchResults = results
+                    self.searchResults = merged
                     self.isSearching = false
                 }
             } catch {

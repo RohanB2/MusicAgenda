@@ -34,10 +34,10 @@ struct ITunesResult: Codable {
 class ITunesAPI {
     static let shared = ITunesAPI()
     // 1. Search for Albums (Smart Search)
-    func searchAlbums(query: String) async throws -> [ITunesResult] {
+    func searchAlbums(query: String, limit: Int = 50) async throws -> [ITunesResult] {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              // Changed back to 'entity=album' because searching songs clogs the 50 limit with random obscure singles
-              let url = URL(string: "https://itunes.apple.com/search?term=\(encodedQuery)&entity=album&limit=50") else {
+              // Changed back to 'entity=album' because searching songs clogs the limit with random obscure singles
+              let url = URL(string: "https://itunes.apple.com/search?term=\(encodedQuery)&entity=album&limit=\(limit)") else {
             return []
         }
         
@@ -64,6 +64,18 @@ class ITunesAPI {
         }
         
         return orderedResults
+    }
+    
+    // 1b. Search for Artists
+    func searchArtists(query: String) async throws -> [ITunesResult] {
+        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "https://itunes.apple.com/search?term=\(encodedQuery)&entity=musicArtist&limit=5") else {
+            return []
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(ITunesSearchResponse.self, from: data)
+        return response.results
     }
     
     // 2. Fetch tracks for a specific album

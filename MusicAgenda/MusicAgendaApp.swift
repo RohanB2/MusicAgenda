@@ -25,7 +25,7 @@ struct MusicAgendaApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Music Agenda") {
             ContentView()
         }
         .modelContainer(sharedModelContainer)

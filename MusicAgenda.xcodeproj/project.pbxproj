@@ -41,7 +41,7 @@
 		976FCC542FE32A0B00811595 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		976FCC562FE32A0B00811595 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		976FCC6C2FE32A2A00811595 /* MusicAgendaWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MusicAgendaWidgetExtension.entitlements; sourceTree = "<group>"; };
-		97F54DE02FE0B46B00E7D6E7 /* MusicAgenda.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicAgenda.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		97F54DE02FE0B46B00E7D6E7 /* Music Agenda.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Music Agenda.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -123,7 +123,7 @@
 		97F54DE12FE0B46B00E7D6E7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				97F54DE02FE0B46B00E7D6E7 /* MusicAgenda.app */,
+				97F54DE02FE0B46B00E7D6E7 /* Music Agenda.app */,
 				976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */,
 			);
 			name = Products;
@@ -154,9 +154,9 @@
 			productReference = 976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		97F54DDF2FE0B46B00E7D6E7 /* MusicAgenda */ = {
+		97F54DDF2FE0B46B00E7D6E7 /* Music Agenda */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 97F54DED2FE0B46C00E7D6E7 /* Build configuration list for PBXNativeTarget "MusicAgenda" */;
+			buildConfigurationList = 97F54DED2FE0B46C00E7D6E7 /* Build configuration list for PBXNativeTarget "Music Agenda" */;
 			buildPhases = (
 				97F54DDC2FE0B46B00E7D6E7 /* Sources */,
 				97F54DDD2FE0B46B00E7D6E7 /* Frameworks */,
@@ -171,11 +171,11 @@
 			fileSystemSynchronizedGroups = (
 				97F54DE22FE0B46B00E7D6E7 /* MusicAgenda */,
 			);
-			name = MusicAgenda;
+			name = "Music Agenda";
 			packageProductDependencies = (
 			);
 			productName = MusicAgenda;
-			productReference = 97F54DE02FE0B46B00E7D6E7 /* MusicAgenda.app */;
+			productReference = 97F54DE02FE0B46B00E7D6E7 /* Music Agenda.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -210,7 +210,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				97F54DDF2FE0B46B00E7D6E7 /* MusicAgenda */,
+				97F54DDF2FE0B46B00E7D6E7 /* Music Agenda */,
 				976FCC512FE32A0B00811595 /* MusicAgendaWidgetExtension */,
 			);
 		};
@@ -470,6 +470,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Music Agenda";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -514,6 +515,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Music Agenda";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -554,7 +556,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		97F54DED2FE0B46C00E7D6E7 /* Build configuration list for PBXNativeTarget "MusicAgenda" */ = {
+		97F54DED2FE0B46C00E7D6E7 /* Build configuration list for PBXNativeTarget "Music Agenda" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				97F54DEE2FE0B46C00E7D6E7 /* Debug */,

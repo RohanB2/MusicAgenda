@@ -81,8 +81,7 @@ struct ContentView: View {
                     LibraryView(filter: .archive)
                         .transition(.opacity)
                 case nil:
-                    Text("Select an item from the sidebar")
-                        .foregroundStyle(.secondary)
+                    LibraryView(filter: .inbox)
                         .transition(.opacity)
                 }
             }

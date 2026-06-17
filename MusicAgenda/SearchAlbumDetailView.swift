@@ -21,123 +21,157 @@ struct SearchAlbumDetailView: View {
     @Query private var savedAlbums: [Album]
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Header (Artwork + Info)
-                HStack(alignment: .bottom, spacing: 20) {
-                    AsyncImage(url: ITunesAPI.shared.highResArtworkUrl(from: result.artworkUrl100)) { image in
-                        image.resizable().aspectRatio(contentMode: .fit)
-                    } placeholder: {
-                        Rectangle().fill(Color.secondary.opacity(0.2))
-                    }
-                    .frame(width: 200, height: 200)
-                    .cornerRadius(12)
-                    .shadow(radius: 10)
-                    
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack(alignment: .top) {
-                            Text(result.collectionName ?? "Unknown Album")
-                                .font(.system(size: 32, weight: .bold))
-                            if result.collectionExplicitness == "explicit" {
-                                Image(systemName: "e.square.fill")
-                                    .foregroundStyle(.secondary)
-                                    .padding(.top, 8)
-                            }
-                        }
-                        
-                        HStack(alignment: .firstTextBaseline) {
-                            if let artistId = result.artistId, let artistName = result.artistName {
-                                Button {
-                                    onArtistSelect?(artistId, artistName)
-                                } label: {
-                                    Text(artistName)
-                                        .font(.title2)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .buttonStyle(.plain)
-                            } else {
-                                Text(result.artistName ?? "Unknown Artist")
-                                    .font(.title2)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            Text(formattedYear)
-                                .font(.title3)
-                                .foregroundStyle(.secondary.opacity(0.8))
-                        }
-                        
-                        if !totalDurationString.isEmpty {
-                            Text(totalDurationString)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 2)
-                        }
-                        
-                        Button(action: addToAgenda) {
-                            Label(isAdded ? "Added to Agenda" : "Add to Agenda", systemImage: isAdded ? "checkmark" : "plus")
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(isAdded)
-                        .padding(.top, 10)
-                    }
-                    Spacer()
+        ZStack {
+            // 1. Premium Blurred Background
+            GeometryReader { geometry in
+                AsyncImage(url: ITunesAPI.shared.highResArtworkUrl(from: result.artworkUrl100)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .blur(radius: 80)
+                        .opacity(0.6)
+                } placeholder: {
+                    Color.clear
                 }
-                .padding()
-                
-                // Tracklist
-                if isLoading {
-                    ProgressView()
-                } else {
-                    VStack(alignment: .leading) {
-                        Text("Tracklist")
-                            .font(.title2.bold())
-                            .padding(.horizontal)
+            }
+            .ignoresSafeArea()
+            
+            // 2. Main Content
+            ScrollView {
+                VStack(spacing: 30) {
+                    // Header
+                    HStack(alignment: .bottom, spacing: 30) {
+                        AsyncImage(url: ITunesAPI.shared.highResArtworkUrl(from: result.artworkUrl100)) { image in
+                            image.resizable().aspectRatio(contentMode: .fit)
+                        } placeholder: {
+                            Rectangle().fill(Color.secondary.opacity(0.2))
+                        }
+                        .frame(width: 240, height: 240)
+                        .cornerRadius(16)
+                        .shadow(color: .black.opacity(0.4), radius: 20, y: 10)
                         
-                        ForEach(tracks, id: \.trackId) { track in
-                            HStack {
-                                Text("\(track.trackNumber ?? 0)")
-                                    .frame(width: 30, alignment: .trailing)
-                                    .foregroundStyle(.secondary)
-                                
-                                Text(track.trackName ?? "Unknown Track")
-                                if track.trackExplicitness == "explicit" {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(alignment: .top) {
+                                Text(result.collectionName ?? "Unknown Album")
+                                    .font(.system(size: 40, weight: .heavy))
+                                if result.collectionExplicitness == "explicit" {
                                     Image(systemName: "e.square.fill")
                                         .foregroundStyle(.secondary)
-                                        .font(.caption)
+                                        .padding(.top, 12)
                                 }
-                                Spacer()
-                                
-                                Button {
-                                    if let albumId = result.collectionId, let trackId = track.trackId, let url = URL(string: "music://music.apple.com/album/id\(albumId)?i=\(trackId)") {
-                                        NSWorkspace.shared.open(url)
+                            }
+                            
+                            HStack(alignment: .firstTextBaseline) {
+                                if let artistId = result.artistId, let artistName = result.artistName {
+                                    Button {
+                                        onArtistSelect?(artistId, artistName)
+                                    } label: {
+                                        Text(artistName)
+                                            .font(.system(size: 24, weight: .semibold))
+                                            .foregroundStyle(.secondary)
                                     }
-                                } label: {
-                                    Image(systemName: "play.fill")
-                                        .font(.caption)
+                                    .buttonStyle(.plain)
+                                } else {
+                                    Text(result.artistName ?? "Unknown Artist")
+                                        .font(.system(size: 24, weight: .semibold))
                                         .foregroundStyle(.secondary)
                                 }
-                                .buttonStyle(.plain)
-                                .padding(.trailing, 8)
                                 
-                                Text(formattedTrackLength(millis: track.trackTimeMillis))
-                                    .font(.subheadline.monospacedDigit())
-                                    .foregroundStyle(.secondary)
+                                Text(formattedYear)
+                                    .font(.title3)
+                                    .foregroundStyle(.secondary.opacity(0.8))
                             }
-                            .padding(.vertical, 4)
-                            .padding(.horizontal)
+                            
+                            if !totalDurationString.isEmpty {
+                                Text(totalDurationString)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
+                            
+                            Button(action: addToAgenda) {
+                                Label(isAdded ? "Added to Agenda" : "Add to Agenda", systemImage: isAdded ? "checkmark" : "plus")
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .font(.subheadline.bold())
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(isAdded)
+                            .padding(.top, 10)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.top, 40)
+                    
+                    // 3. Frosted Glass Tracklist
+                    if isLoading {
+                        ProgressView()
+                            .padding(.top, 50)
+                    } else {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Tracklist")
+                                .font(.title2.bold())
+                                .padding()
+                            
                             Divider()
+                            
+                            ForEach(tracks, id: \.trackId) { track in
+                                HStack {
+                                    Text("\(track.trackNumber ?? 0)")
+                                        .frame(width: 30, alignment: .trailing)
+                                        .foregroundStyle(.secondary)
+                                    
+                                    Text(track.trackName ?? "Unknown Track")
+                                        .font(.system(size: 16, weight: .medium))
+                                        
+                                    if track.trackExplicitness == "explicit" {
+                                        Image(systemName: "e.square.fill")
+                                            .foregroundStyle(.secondary)
+                                            .font(.caption)
+                                    }
+                                    Spacer()
+                                    
+                                    Button {
+                                        if let albumId = result.collectionId, let trackId = track.trackId, let url = URL(string: "music://music.apple.com/album/id\(albumId)?i=\(trackId)") {
+                                            NSWorkspace.shared.open(url)
+                                        }
+                                    } label: {
+                                        Image(systemName: "play.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .padding(.trailing, 8)
+                                    
+                                    Text(formattedTrackLength(millis: track.trackTimeMillis))
+                                        .font(.subheadline.monospacedDigit())
+                                        .foregroundStyle(.secondary)
+                                        .padding(.trailing, 10)
+                                }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 20)
+                                
+                                if track.trackId != tracks.last?.trackId {
+                                    Divider().padding(.leading, 60)
+                                }
+                            }
+                            
+                            if let exactDate = formattedExactDate {
+                                Text(exactDate)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 20)
+                                    .padding(.bottom, 40)
+                                    .padding(.horizontal, 20)
+                            }
                         }
-                        
-                        if let exactDate = formattedExactDate {
-                            Text(exactDate)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 20)
-                                .padding(.bottom, 40) // Increased padding
-                                .padding(.horizontal)
-                        }
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 40)
                     }
                 }
             }

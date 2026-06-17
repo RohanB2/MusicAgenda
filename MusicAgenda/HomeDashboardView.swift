@@ -41,7 +41,7 @@ struct HomeDashboardView: View {
                     StatCard(title: "Top Artist", value: topArtist, icon: "music.mic", color: .purple)
                     
                     // Total Time Listened
-                    let timeString = getTotalTimeListened(from: completed)
+                    let timeString = getTotalTimeListened(from: albums)
                     Button {
                         showTimeSheet = true
                     } label: {
@@ -70,7 +70,13 @@ struct HomeDashboardView: View {
     }
     
     private func getTotalTimeListened(from albums: [Album]) -> String {
-        let totalMillis = albums.compactMap { $0.totalTimeMillis }.reduce(0, +)
+        var totalMillis = 0
+        for album in albums {
+            for track in album.tracks where track.isListened {
+                totalMillis += track.trackTimeMillis ?? 0
+            }
+        }
+        
         if totalMillis == 0 { return "0 mins" }
         
         let totalMinutes = totalMillis / 60000
