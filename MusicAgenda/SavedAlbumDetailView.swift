@@ -64,9 +64,32 @@ struct SavedAlbumDetailView: View {
                             if let rating = album.rating {
                                 HStack(spacing: 4) {
                                     ForEach(1...5, id: \.self) { star in
-                                        Image(systemName: star <= rating ? "star.fill" : "star")
-                                            .font(.title3)
-                                            .foregroundStyle(.yellow)
+                                        Button {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                                album.rating = star
+                                            }
+                                        } label: {
+                                            Image(systemName: star <= rating ? "star.fill" : "star")
+                                                .font(.title3)
+                                                .foregroundStyle(.yellow)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            } else if album.tracks.count > 0 && album.tracks.filter(\.isListened).count == album.tracks.count {
+                                // Album is complete but no rating yet
+                                HStack(spacing: 4) {
+                                    ForEach(1...5, id: \.self) { star in
+                                        Button {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                                album.rating = star
+                                            }
+                                        } label: {
+                                            Image(systemName: "star")
+                                                .font(.title3)
+                                                .foregroundStyle(.yellow.opacity(0.4))
+                                        }
+                                        .buttonStyle(.plain)
                                     }
                                 }
                             }
