@@ -80,7 +80,7 @@ MusicAgendaWidget/
 ### Build & Run
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/MusicAgenda.git
+   git clone https://github.com/RohanB2/MusicAgenda.git
    ```
 2. Open `MusicAgenda.xcodeproj` in Xcode.
 3. Select the **MusicAgenda** scheme and hit **Cmd + R**.
