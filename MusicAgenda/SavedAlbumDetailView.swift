@@ -13,6 +13,10 @@ struct SavedAlbumDetailView: View {
     var onArtistSelect: ((Int, String) -> Void)?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @State private var showRatingSheet = false
+    
+    @State private var trackBeingEdited: Track? = nil
+    @State private var editingNoteText: String = ""
     
     var body: some View {
         ZStack {
@@ -54,6 +58,16 @@ struct SavedAlbumDetailView: View {
                                     Image(systemName: "e.square.fill")
                                         .foregroundStyle(.secondary)
                                         .padding(.top, 12)
+                                }
+                            }
+                            
+                            if let rating = album.rating {
+                                HStack(spacing: 4) {
+                                    ForEach(1...5, id: \.self) { star in
+                                        Image(systemName: star <= rating ? "star.fill" : "star")
+                                            .font(.title3)
+                                            .foregroundStyle(.yellow)
+                                    }
                                 }
                             }
                             HStack(alignment: .firstTextBaseline) {
@@ -129,7 +143,16 @@ struct SavedAlbumDetailView: View {
                                 // Animated Checkbox Button
                                 Button {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                        let wasListened = track.isListened
                                         track.isListened.toggle()
+                                        
+                                        // If we just completed the album, show the rating sheet
+                                        if !wasListened {
+                                            let newListenedCount = album.tracks.filter { $0.isListened }.count
+                                            if newListenedCount == album.tracks.count {
+                                                showRatingSheet = true
+                                            }
+                                        }
                                     }
                                 } label: {
                                     Image(systemName: track.isListened ? "checkmark.circle.fill" : "circle")
@@ -143,10 +166,26 @@ struct SavedAlbumDetailView: View {
                                     .frame(width: 30, alignment: .trailing)
                                     .foregroundStyle(.secondary)
                                 
-                                Text(track.title)
-                                    .strikethrough(track.isListened, color: .secondary)
-                                    .foregroundStyle(track.isListened ? .secondary : .primary)
-                                    .font(.system(size: 16, weight: .medium))
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(track.title)
+                                        .strikethrough(track.isListened, color: .secondary)
+                                        .foregroundStyle(track.isListened ? .secondary : .primary)
+                                        .font(.system(size: 16, weight: .medium))
+                                    
+                                    if let note = track.note, !note.isEmpty {
+                                        Text(note)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .italic()
+                                            .padding(.leading, 8)
+                                            .overlay(
+                                                Rectangle()
+                                                    .fill(Color.secondary.opacity(0.3))
+                                                    .frame(width: 2),
+                                                alignment: .leading
+                                            )
+                                    }
+                                }
                                 
                                 if track.isExplicit {
                                     Image(systemName: "e.square.fill")
@@ -177,6 +216,30 @@ struct SavedAlbumDetailView: View {
                             .padding(.horizontal, 20)
                             // Highlight the background if we hover
                             .background(HoverBackground())
+                            .contextMenu {
+                                if let note = track.note, !note.isEmpty {
+                                    Button {
+                                        editingNoteText = note
+                                        trackBeingEdited = track
+                                    } label: {
+                                        Label("Edit Note", systemImage: "pencil")
+                                    }
+                                    Button(role: .destructive) {
+                                        withAnimation {
+                                            track.note = nil
+                                        }
+                                    } label: {
+                                        Label("Clear Note", systemImage: "trash")
+                                    }
+                                } else {
+                                    Button {
+                                        editingNoteText = ""
+                                        trackBeingEdited = track
+                                    } label: {
+                                        Label("Add Note", systemImage: "text.bubble")
+                                    }
+                                }
+                            }
                             
                             if track.id != sortedTracks.last?.id {
                                 Divider().padding(.leading, 60)
@@ -199,6 +262,26 @@ struct SavedAlbumDetailView: View {
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
                 }
+            }
+        }
+        .sheet(isPresented: $showRatingSheet) {
+            RatingSheetView(album: album)
+        }
+        .alert("Track Note", isPresented: Binding(
+            get: { trackBeingEdited != nil },
+            set: { if !$0 { trackBeingEdited = nil } }
+        )) {
+            TextField("Add a note...", text: $editingNoteText)
+            Button("Save") {
+                if let track = trackBeingEdited {
+                    withAnimation {
+                        track.note = editingNoteText.isEmpty ? nil : editingNoteText
+                    }
+                }
+                trackBeingEdited = nil
+            }
+            Button("Cancel", role: .cancel) {
+                trackBeingEdited = nil
             }
         }
     }

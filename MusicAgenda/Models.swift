@@ -18,6 +18,7 @@ final class Album {
     var releaseDateString: String?
     var totalTimeMillis: Int?
     var isExplicit: Bool = false
+    var rating: Int? // 1-5 stars
     
     // A relationship tying this album to multiple tracks. If we delete the album, delete its tracks too.
     @Relationship(deleteRule: .cascade, inverse: \Track.album)
@@ -48,6 +49,7 @@ final class Track {
     var playlistTags: [String]
     var trackTimeMillis: Int?
     var isExplicit: Bool = false
+    var note: String?
     
     var album: Album?
     
