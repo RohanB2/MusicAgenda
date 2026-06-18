@@ -22,10 +22,10 @@ A premium macOS app for tracking your album listening journey. Search Apple Musi
   </tr>
 </table>
 
-## ✨ Features
+## Features
 
-### 🔍 Smart Search
-- **Two-phase search system** — Searches for both artists and albums simultaneously. Typing an artist name surfaces their full discography; typing an album name finds that specific record.
+### Search
+- **Search system** — Searches for both artists and albums simultaneously. Typing an artist name surfaces their full discography; typing an album name finds that specific record.
 - **Artist pages** — Click any artist name to browse their complete catalog sorted by release date.
 - **Genre browsing** — Explore albums by category when you're looking for something new.
 
@@ -34,7 +34,7 @@ A premium macOS app for tracking your album listening journey. Search Apple Musi
 - **Song-by-song tracking** — Check off individual tracks as you listen, with animated checkboxes and a progress bar.
 - **Track notes** — Right-click any track to add personal notes and thoughts.
 - **Heart system** — Mark your favorite tracks with a like button.
-- **Star ratings** — Rate completed albums on a 5-star scale.
+- **Star ratings** — Rate completed albums on a 5-star scale. Can edit this rating in the future by just clicking on the stars in the album view in the completed section.
 
 ### 🎨 Premium Design
 - **Blurred album backgrounds** — Every album detail view features a gorgeous, blurred backdrop pulled from the album artwork (inspired by Apple Music).
@@ -50,7 +50,7 @@ A premium macOS app for tracking your album listening journey. Search Apple Musi
 
 ### 🧩 Desktop Widgets
 - **Medium & Large widgets** — See your in-progress albums right on your desktop.
-- **Dynamic track counts** — The large widget intelligently adjusts how many tracks it displays based on how many albums are in progress.
+- **Dynamic track counts** — The large widget adjusts how many tracks it displays based on how many albums are in progress.
 - **Album artwork backgrounds** — Widgets feature the same blurred album art aesthetic as the main app.
 - **Interactive toggles** — Mark tracks as listened directly from the widget (requires macOS 14+).
 
