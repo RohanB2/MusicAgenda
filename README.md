@@ -2,10 +2,25 @@
 
 A premium macOS app for tracking your album listening journey. Search Apple Music's catalog, build your personal listening agenda, and track your progress song by song — all wrapped in a beautiful, native SwiftUI experience.
 
-<!-- 
-Add screenshots here once taken:
-![Dashboard](screenshots/dashboard.png)
--->
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td width="33.3%" align="center"><b>Dashboard</b><br/><img src="Screenshots/Dashboard.png" alt="Dashboard"/></td>
+    <td width="33.3%" align="center"><b>Album Progress</b><br/><img src="Screenshots/Album_progress.png" alt="Album Progress"/></td>
+    <td width="33.3%" align="center"><b>Desktop Widgets</b><br/><img src="Screenshots/Widget.png" alt="Desktop Widgets"/></td>
+  </tr>
+  <tr>
+    <td width="33.3%" align="center"><b>Smart Search</b><br/><img src="Screenshots/Search.png" alt="Smart Search"/></td>
+    <td width="33.3%" align="center"><b>Album Details</b><br/><img src="Screenshots/Search_detail.png" alt="Album Details"/></td>
+    <td width="33.3%" align="center"><b>Artist Discography</b><br/><img src="Screenshots/Artist.png" alt="Artist Discography"/></td>
+  </tr>
+  <tr>
+    <td width="33.3%" align="center"><b>Album Rating</b><br/><img src="Screenshots/Rating.png" alt="Album Rating"/></td>
+    <td width="33.3%" align="center"><b>Track Notes</b><br/><img src="Screenshots/Track_note.png" alt="Track Notes"/></td>
+    <td width="33.3%" align="center"><b>Agenda List</b><br/><img src="Screenshots/Agenda.png" alt="Agenda List"/></td>
+  </tr>
+</table>
 
 ## ✨ Features
 
