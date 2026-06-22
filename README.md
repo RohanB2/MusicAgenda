@@ -29,32 +29,32 @@ A premium macOS app for tracking your album listening journey. Search Apple Musi
 - **Artist pages** — Click any artist name to browse their complete catalog sorted by release date.
 - **Genre browsing** — Explore albums by category when you're looking for something new.
 
-### 📋 Album Tracking
+### Album Tracking
 - **Three-stage workflow** — Albums flow through **Agenda** → **In Progress** → **Completed** as you listen.
 - **Song-by-song tracking** — Check off individual tracks as you listen, with animated checkboxes and a progress bar.
 - **Track notes** — Right-click any track to add personal notes and thoughts.
 - **Heart system** — Mark your favorite tracks with a like button.
 - **Star ratings** — Rate completed albums on a 5-star scale. Can edit this rating in the future by just clicking on the stars in the album view in the completed section.
 
-### 🎨 Premium Design
+### Premium Design
 - **Blurred album backgrounds** — Every album detail view features a gorgeous, blurred backdrop pulled from the album artwork (inspired by Apple Music).
 - **Frosted glass tracklists** — Track listings sit on macOS's native `ultraThinMaterial` for that premium translucent look.
 - **Hover animations** — Subtle scale and shadow effects on album cards and track rows.
 - **Deep linking** — Click the play button on any track to open it directly in Apple Music.
 
-### 📊 Dashboard
+### Dashboard
 - **Albums Completed** — Total count of fully listened albums.
 - **In Progress** — Albums you're currently working through.
 - **Top Artist** — Your most completed artist.
 - **Time Listened** — Total listening time calculated from every individual track you've checked off.
 
-### 🧩 Desktop Widgets
+### Desktop & Control Center Widgets
 - **Medium & Large widgets** — See your in-progress albums right on your desktop.
 - **Dynamic track counts** — The large widget adjusts how many tracks it displays based on how many albums are in progress.
 - **Album artwork backgrounds** — Widgets feature the same blurred album art aesthetic as the main app.
 - **Interactive toggles** — Mark tracks as listened directly from the widget (requires macOS 14+).
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -64,7 +64,7 @@ A premium macOS app for tracking your album listening journey. Search Apple Musi
 | **Widgets** | WidgetKit + AppIntents |
 | **Platforms** | macOS 14+ |
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 MusicAgenda/
@@ -85,7 +85,7 @@ MusicAgendaWidget/
 ├── MusicAgendaWidget.swift       # Widget timeline, views & configuration
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - **Xcode 15+**
