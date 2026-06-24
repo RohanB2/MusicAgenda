@@ -1,4 +1,5 @@
 import AppIntents
+import WidgetKit
 
 struct MarkTrackListenedIntent: AppIntent {
     static var title: LocalizedStringResource = "Mark Track Listened"
@@ -21,6 +22,7 @@ struct MarkTrackListenedIntent: AppIntent {
                 userDefaults.set(pending, forKey: "pendingTrackUpdates")
             }
         }
+        WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
 }

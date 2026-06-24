@@ -23,6 +23,7 @@ class FirestoreManager {
     var albums: [FirebaseAlbum] = []
     private var db = Firestore.firestore()
     private var listenerRegistration: ListenerRegistration?
+    private var userDefaultsObserver: NSObjectProtocol?
     
     var currentUserId: String? {
         Auth.auth().currentUser?.uid
@@ -46,10 +47,22 @@ class FirestoreManager {
                 self?.processPendingWidgetUpdates()
                 self?.syncWidgetData()
             }
+            
+        userDefaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.processPendingWidgetUpdates()
+        }
     }
     
     func stopListening() {
         listenerRegistration?.remove()
+        if let observer = userDefaultsObserver {
+            NotificationCenter.default.removeObserver(observer)
+            userDefaultsObserver = nil
+        }
     }
     
     func addAlbum(_ album: FirebaseAlbum) {
@@ -77,10 +90,15 @@ class FirestoreManager {
         }.prefix(3)
         
         Task {
+            let userDefaults = UserDefaults(suiteName: "group.com.rohanbatra.MusicAgenda")
+            let existingData = userDefaults?.data(forKey: "widgetAlbums")
+            let existingAlbums = (try? JSONDecoder().decode([WidgetAlbum].self, from: existingData ?? Data())) ?? []
+            
             var widgetAlbums: [WidgetAlbum] = []
             for album in inProgress {
-                var data: Data? = nil
-                if let urlStr = album.artworkUrlString, let url = URL(string: urlStr) {
+                var data: Data? = existingAlbums.first(where: { $0.id == album.id })?.artworkData
+                
+                if data == nil, let urlStr = album.artworkUrlString, let url = URL(string: urlStr) {
                     if let (responseData, _) = try? await URLSession.shared.data(from: url) {
                         data = responseData
                     }
@@ -92,10 +110,17 @@ class FirestoreManager {
                 widgetAlbums.append(WidgetAlbum(id: album.id, title: album.title, artist: album.artist, artworkData: data, unlistenedTracks: tracks))
             }
             
-            if let encoded = try? JSONEncoder().encode(widgetAlbums),
-               let userDefaults = UserDefaults(suiteName: "group.com.rohanbatra.MusicAgenda") {
-                userDefaults.set(encoded, forKey: "widgetAlbums")
-                WidgetCenter.shared.reloadAllTimelines()
+            if let userDefaults = UserDefaults(suiteName: "group.com.rohanbatra.MusicAgenda") {
+                // Reconcile pending tracks - remove them from pending only if they are no longer in the unlistened tracks
+                var pending = userDefaults.stringArray(forKey: "pendingTrackUpdates") ?? []
+                let allUnlistenedTrackIds = widgetAlbums.flatMap { $0.unlistenedTracks.map { $0.id } }
+                pending.removeAll { !allUnlistenedTrackIds.contains($0) }
+                userDefaults.set(pending, forKey: "pendingTrackUpdates")
+                
+                if let encoded = try? JSONEncoder().encode(widgetAlbums) {
+                    userDefaults.set(encoded, forKey: "widgetAlbums")
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
             }
         }
     }
@@ -111,8 +136,10 @@ class FirestoreManager {
             if let index = albums.firstIndex(where: { album in album.tracks.contains(where: { $0.id == trackId }) }) {
                 var updatedAlbum = albums[index]
                 if let trackIndex = updatedAlbum.tracks.firstIndex(where: { $0.id == trackId }) {
-                    updatedAlbum.tracks[trackIndex].isListened = true
-                    modifiedAlbums.append(updatedAlbum)
+                    if !updatedAlbum.tracks[trackIndex].isListened {
+                        updatedAlbum.tracks[trackIndex].isListened = true
+                        modifiedAlbums.append(updatedAlbum)
+                    }
                 }
             }
         }
@@ -122,7 +149,7 @@ class FirestoreManager {
             addAlbum(album)
         }
         
-        // Clear pending updates
-        userDefaults.set([String](), forKey: "pendingTrackUpdates")
+        // Note: We deliberately do NOT clear pending updates here! 
+        // syncWidgetData() will clear them once Firestore confirms the change and the widget data is re-calculated.
     }
 }
