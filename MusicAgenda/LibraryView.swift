@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 enum LibraryFilter {
     case inbox
@@ -8,13 +7,13 @@ enum LibraryFilter {
 }
 
 enum LibraryPath: Equatable {
-    case savedAlbum(Album)
+    case savedAlbum(String)
     case artist(Int, String) // artistId, artistName
     case searchAlbum(ITunesResult)
     
     static func == (lhs: LibraryPath, rhs: LibraryPath) -> Bool {
         switch (lhs, rhs) {
-        case (.savedAlbum(let l), .savedAlbum(let r)): return l.id == r.id
+        case (.savedAlbum(let l), .savedAlbum(let r)): return l == r
         case (.artist(let lId, _), .artist(let rId, _)): return lId == rId
         case (.searchAlbum(let l), .searchAlbum(let r)): return l.collectionId == r.collectionId
         default: return false
@@ -23,15 +22,15 @@ enum LibraryPath: Equatable {
 }
 
 struct LibraryView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Album.dateAdded, order: .reverse) private var allAlbums: [Album]
+    @Environment(FirestoreManager.self) private var firestoreManager
+    private var allAlbums: [FirebaseAlbum] { firestoreManager.albums }
     
     let filter: LibraryFilter
     @State private var searchText = ""
     
     @State private var path: [LibraryPath] = []
     
-    var filteredAlbums: [Album] {
+    var filteredAlbums: [FirebaseAlbum] {
         let textFiltered = searchText.isEmpty ? allAlbums : allAlbums.filter { album in
             album.title.localizedCaseInsensitiveContains(searchText) ||
             album.artist.localizedCaseInsensitiveContains(searchText)
@@ -54,8 +53,8 @@ struct LibraryView: View {
         ZStack {
             if let current = path.last {
                 switch current {
-                case .savedAlbum(let album):
-                    SavedAlbumDetailView(album: album) { artistId, artistName in
+                case .savedAlbum(let albumId):
+                    SavedAlbumDetailView(albumId: albumId) { artistId, artistName in
                         withAnimation(.easeInOut(duration: 0.25)) {
                             path.append(.artist(artistId, artistName))
                         }
@@ -94,7 +93,7 @@ struct LibraryView: View {
                             ForEach(filteredAlbums) { album in
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.25)) {
-                                        path.append(.savedAlbum(album))
+                                        path.append(.savedAlbum(album.id))
                                     }
                                 } label: {
                                     SavedAlbumCardView(album: album)
@@ -150,7 +149,7 @@ struct LibraryView: View {
 }
 
 struct SavedAlbumCardView: View {
-    let album: Album
+    let album: FirebaseAlbum
     @State private var isHovering = false
     
     var body: some View {

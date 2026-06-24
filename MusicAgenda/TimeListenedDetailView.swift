@@ -1,20 +1,20 @@
 import SwiftUI
-import SwiftData
 
 struct TimeListenedDetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query private var albums: [Album]
+    @Environment(FirestoreManager.self) private var firestoreManager
+    private var albums: [FirebaseAlbum] { firestoreManager.albums }
     
     // We get all listened tracks, paired with their album for context
-    private var listenedTracks: [(track: Track, album: Album)] {
-        var results: [(track: Track, album: Album)] = []
+    private var listenedTracks: [(track: FirebaseTrack, album: FirebaseAlbum)] {
+        var results: [(track: FirebaseTrack, album: FirebaseAlbum)] = []
         for album in albums {
             for track in album.tracks where track.isListened {
                 results.append((track: track, album: album))
             }
         }
         // Sort by longest duration first
-        return results.sorted { (a: (track: Track, album: Album), b: (track: Track, album: Album)) -> Bool in
+        return results.sorted { (a: (track: FirebaseTrack, album: FirebaseAlbum), b: (track: FirebaseTrack, album: FirebaseAlbum)) -> Bool in
             return (a.track.trackTimeMillis ?? 0) > (b.track.trackTimeMillis ?? 0)
         }
     }

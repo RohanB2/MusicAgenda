@@ -6,28 +6,18 @@
 //
 
 import SwiftUI
-import SwiftData
+import FirebaseCore
 
 @main
 struct MusicAgendaApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Album.self, Track.self
-        ])
-        let sharedURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.rohanbatra.MusicAgenda")!.appendingPathComponent("MusicAgenda.sqlite")
-        let modelConfiguration = ModelConfiguration(schema: schema, url: sharedURL)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    
+    init() {
+        FirebaseApp.configure()
+    }
 
     var body: some Scene {
         WindowGroup("Music Agenda") {
-            ContentView()
+            RootView()
         }
-        .modelContainer(sharedModelContainer)
     }
 }

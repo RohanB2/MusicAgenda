@@ -1,8 +1,8 @@
 import SwiftUI
-import SwiftData
 
 struct HomeDashboardView: View {
-    @Query private var albums: [Album]
+    @Environment(FirestoreManager.self) private var firestoreManager
+    private var albums: [FirebaseAlbum] { firestoreManager.albums }
     @Binding var selectedNav: NavigationItem?
     
     @State private var showTimeSheet = false
@@ -60,7 +60,7 @@ struct HomeDashboardView: View {
         }
     }
     
-    private func getTopArtist(from albums: [Album]) -> String {
+    private func getTopArtist(from albums: [FirebaseAlbum]) -> String {
         guard !albums.isEmpty else { return "None" }
         var counts: [String: Int] = [:]
         for album in albums {
@@ -69,7 +69,7 @@ struct HomeDashboardView: View {
         return counts.max(by: { $0.value < $1.value })?.key ?? "None"
     }
     
-    private func getTotalTimeListened(from albums: [Album]) -> String {
+    private func getTotalTimeListened(from albums: [FirebaseAlbum]) -> String {
         var totalMillis = 0
         for album in albums {
             for track in album.tracks where track.isListened {

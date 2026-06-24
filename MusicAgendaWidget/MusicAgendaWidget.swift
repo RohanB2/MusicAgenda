@@ -1,6 +1,5 @@
 import WidgetKit
 import SwiftUI
-import SwiftData
 import AppIntents
 #if os(macOS)
 import AppKit
@@ -8,13 +7,13 @@ import AppKit
 import UIKit
 #endif
 
-struct WidgetTrack: Identifiable {
+struct WidgetTrack: Codable, Identifiable {
     let id: String
     let title: String
     let trackNumber: Int
 }
 
-struct WidgetAlbum: Identifiable {
+struct WidgetAlbum: Codable, Identifiable {
     let id: String
     let title: String
     let artist: String
@@ -46,40 +45,13 @@ struct Provider: TimelineProvider {
     }
     
     private func fetchInProgressAlbums() async -> [WidgetAlbum] {
-        let schema = Schema([Album.self, Track.self])
-        guard let sharedURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.rohanbatra.MusicAgenda")?.appendingPathComponent("MusicAgenda.sqlite") else { return [] }
-        let modelConfiguration = ModelConfiguration(schema: schema, url: sharedURL)
-        
-        guard let container = try? ModelContainer(for: schema, configurations: [modelConfiguration]) else { return [] }
-        let context = ModelContext(container)
-        
-        let descriptor = FetchDescriptor<Album>(sortBy: [SortDescriptor(\.dateAdded, order: .reverse)])
-        guard let allAlbums = try? context.fetch(descriptor) else { return [] }
-        
-        var widgetAlbums: [WidgetAlbum] = []
-        for album in allAlbums {
-            let listenedCount = album.tracks.filter { $0.isListened }.count
-            let totalCount = album.tracks.isEmpty ? 1 : album.tracks.count
-            
-            if listenedCount > 0 && listenedCount < totalCount {
-                var data: Data? = nil
-                if let urlStr = album.artworkUrlString, let url = URL(string: urlStr) {
-                    do {
-                        let request = URLRequest(url: url, timeoutInterval: 3.0) // 3 second timeout
-                        let (responseData, _) = try await URLSession.shared.data(for: request)
-                        data = responseData
-                    } catch {
-                        print("Widget image fetch failed: \(error)")
-                    }
-                }
-                
-                let unlistened = album.tracks.filter { !$0.isListened }.sorted { $0.trackNumber < $1.trackNumber }
-                let tracks = unlistened.map { WidgetTrack(id: $0.id, title: $0.title, trackNumber: $0.trackNumber) }
-                
-                widgetAlbums.append(WidgetAlbum(id: album.id, title: album.title, artist: album.artist, artworkData: data, unlistenedTracks: tracks))
-            }
+        if let userDefaults = UserDefaults(suiteName: "group.com.rohanbatra.MusicAgenda"),
+           let data = userDefaults.data(forKey: "widgetAlbums"),
+           let albums = try? JSONDecoder().decode([WidgetAlbum].self, from: data)
+        {
+            return albums
         }
-        return widgetAlbums
+        return []
     }
 }
 

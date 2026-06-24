@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct SearchAlbumDetailView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(FirestoreManager.self) private var firestoreManager
     
     let result: ITunesResult
     var onArtistSelect: ((Int, String) -> Void)?
@@ -17,8 +16,7 @@ struct SearchAlbumDetailView: View {
     @State private var isLoading = true
     @State private var isAdded = false
     
-    // Check if album is already in our database
-    @Query private var savedAlbums: [Album]
+    private var savedAlbums: [FirebaseAlbum] { firestoreManager.albums }
 
     var body: some View {
         ZStack {
@@ -206,7 +204,21 @@ struct SearchAlbumDetailView: View {
         
         let totalMillis = tracks.compactMap { $0.trackTimeMillis }.reduce(0, +)
         
-        let newAlbum = Album(
+        let firebaseTracks = tracks.map { track in
+            FirebaseTrack(
+                id: String(track.trackId ?? UUID().hashValue),
+                title: track.trackName ?? "Unknown",
+                trackNumber: track.trackNumber ?? 0,
+                isListened: false,
+                isLiked: false,
+                playlistTags: [],
+                trackTimeMillis: track.trackTimeMillis,
+                isExplicit: track.trackExplicitness == "explicit",
+                note: nil
+            )
+        }
+        
+        let newAlbum = FirebaseAlbum(
             id: String(albumId),
             title: result.collectionName ?? "Unknown",
             artist: result.artistName ?? "Unknown",
@@ -214,22 +226,14 @@ struct SearchAlbumDetailView: View {
             artworkUrlString: result.artworkUrl100,
             releaseDateString: result.releaseDate,
             totalTimeMillis: totalMillis > 0 ? totalMillis : nil,
-            isExplicit: result.collectionExplicitness == "explicit"
+            isExplicit: result.collectionExplicitness == "explicit",
+            rating: nil,
+            dateAdded: .now,
+            tracks: firebaseTracks
         )
         
-        for track in tracks {
-            let newTrack = Track(
-                id: String(track.trackId ?? UUID().hashValue),
-                title: track.trackName ?? "Unknown",
-                trackNumber: track.trackNumber ?? 0,
-                trackTimeMillis: track.trackTimeMillis,
-                isExplicit: track.trackExplicitness == "explicit"
-            )
-            newAlbum.tracks.append(newTrack)
-        }
-        
-        // Save to Database
-        modelContext.insert(newAlbum)
+        // Save to Firestore
+        firestoreManager.addAlbum(newAlbum)
         isAdded = true
     }
     

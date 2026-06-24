@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 enum SearchPath: Equatable {
     case album(ITunesResult)
@@ -40,7 +39,6 @@ let genericGenres: [GenreCategory] = [
 ]
 
 struct SearchView: View {
-    @Environment(\.modelContext) private var modelContext
     @State private var searchText = ""
     @State private var searchResults: [ITunesResult] = []
     @State private var isSearching = false

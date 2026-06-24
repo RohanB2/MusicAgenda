@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 enum NavigationItem: Hashable {
     case home
@@ -10,8 +9,8 @@ enum NavigationItem: Hashable {
 }
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var albums: [Album]
+    @Environment(FirestoreManager.self) private var firestoreManager
+    private var albums: [FirebaseAlbum] { firestoreManager.albums }
     
     @State private var selectedNav: NavigationItem? = .home
     

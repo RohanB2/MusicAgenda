@@ -6,19 +6,33 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct SavedAlbumDetailView: View {
-    let album: Album
+    let albumId: String
     var onArtistSelect: ((Int, String) -> Void)?
-    @Environment(\.modelContext) private var modelContext
+    @Environment(FirestoreManager.self) private var firestoreManager
     @Environment(\.dismiss) private var dismiss
     @State private var showRatingSheet = false
     
-    @State private var trackBeingEdited: Track? = nil
+    @State private var trackBeingEdited: FirebaseTrack? = nil
     @State private var editingNoteText: String = ""
     
+    var album: FirebaseAlbum? {
+        firestoreManager.albums.first(where: { $0.id == albumId })
+    }
+    
     var body: some View {
+        Group {
+            if let album = album {
+                albumContent(album)
+            } else {
+                ProgressView()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func albumContent(_ album: FirebaseAlbum) -> some View {
         ZStack {
             // 1. The Premium Blurred Background
             GeometryReader { geometry in
@@ -66,7 +80,9 @@ struct SavedAlbumDetailView: View {
                                     ForEach(1...5, id: \.self) { star in
                                         Button {
                                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                                album.rating = star
+                                                var updatedAlbum = album
+                                                updatedAlbum.rating = star
+                                                firestoreManager.addAlbum(updatedAlbum)
                                             }
                                         } label: {
                                             Image(systemName: star <= rating ? "star.fill" : "star")
@@ -76,13 +92,15 @@ struct SavedAlbumDetailView: View {
                                         .buttonStyle(.plain)
                                     }
                                 }
-                            } else if album.tracks.count > 0 && album.tracks.filter(\.isListened).count == album.tracks.count {
+                            } else if album.tracks.count > 0 && album.tracks.filter({ $0.isListened }).count == album.tracks.count {
                                 // Album is complete but no rating yet
                                 HStack(spacing: 4) {
                                     ForEach(1...5, id: \.self) { star in
                                         Button {
                                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                                album.rating = star
+                                                var updatedAlbum = album
+                                                updatedAlbum.rating = star
+                                                firestoreManager.addAlbum(updatedAlbum)
                                             }
                                         } label: {
                                             Image(systemName: "star")
@@ -109,26 +127,26 @@ struct SavedAlbumDetailView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 
-                                Text(formattedYear)
+                                Text(formattedYear(for: album))
                                     .font(.title3)
                                     .foregroundStyle(.secondary.opacity(0.8))
                             }
                             
-                            if !totalDurationString.isEmpty {
-                                Text(totalDurationString)
+                            if !totalDurationString(for: album).isEmpty {
+                                Text(totalDurationString(for: album))
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .padding(.top, 2)
                             }
                             
-                            // NEW DELETE BUTTON
+                            // DELETE BUTTON
                             Button(role: .destructive) {
-                                modelContext.delete(album) // Delete from database
-                                dismiss() // Close the view and go back
+                                firestoreManager.deleteAlbum(album)
+                                dismiss()
                             } label: {
                                 Label("Remove from Agenda", systemImage: "trash")
                                     .font(.subheadline.bold())
-                            }
+                                }
                             .buttonStyle(.borderedProminent)
                             .tint(.red)
                             .padding(.top, 5)
@@ -139,7 +157,7 @@ struct SavedAlbumDetailView: View {
                             let progress = Double(listenedCount) / Double(totalCount)
                             
                             ProgressView(value: progress)
-                                .tint(.white) // Looks better on dark blurred backgrounds
+                                .tint(.white)
                                 .padding(.top, 15)
                             
                             Text("\(listenedCount) of \(album.tracks.count) Listened")
@@ -166,14 +184,17 @@ struct SavedAlbumDetailView: View {
                                 // Animated Checkbox Button
                                 Button {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                        let wasListened = track.isListened
-                                        track.isListened.toggle()
-                                        
-                                        // If we just completed the album, show the rating sheet
-                                        if !wasListened {
-                                            let newListenedCount = album.tracks.filter { $0.isListened }.count
-                                            if newListenedCount == album.tracks.count {
-                                                showRatingSheet = true
+                                        var updatedAlbum = album
+                                        if let index = updatedAlbum.tracks.firstIndex(where: { $0.id == track.id }) {
+                                            let wasListened = updatedAlbum.tracks[index].isListened
+                                            updatedAlbum.tracks[index].isListened.toggle()
+                                            firestoreManager.addAlbum(updatedAlbum)
+                                            
+                                            if !wasListened {
+                                                let newListenedCount = updatedAlbum.tracks.filter { $0.isListened }.count
+                                                if newListenedCount == updatedAlbum.tracks.count {
+                                                    showRatingSheet = true
+                                                }
                                             }
                                         }
                                     }
@@ -238,7 +259,11 @@ struct SavedAlbumDetailView: View {
                                 // Animated Like Button
                                 Button {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-                                        track.isLiked.toggle()
+                                        var updatedAlbum = album
+                                        if let index = updatedAlbum.tracks.firstIndex(where: { $0.id == track.id }) {
+                                            updatedAlbum.tracks[index].isLiked.toggle()
+                                            firestoreManager.addAlbum(updatedAlbum)
+                                        }
                                     }
                                 } label: {
                                     Image(systemName: track.isLiked ? "heart.fill" : "heart")
@@ -249,7 +274,6 @@ struct SavedAlbumDetailView: View {
                             }
                             .padding(.vertical, 12)
                             .padding(.horizontal, 20)
-                            // Highlight the background if we hover
                             .background(HoverBackground())
                             .contextMenu {
                                 if let note = track.note, !note.isEmpty {
@@ -261,7 +285,11 @@ struct SavedAlbumDetailView: View {
                                     }
                                     Button(role: .destructive) {
                                         withAnimation {
-                                            track.note = nil
+                                            var updatedAlbum = album
+                                            if let index = updatedAlbum.tracks.firstIndex(where: { $0.id == track.id }) {
+                                                updatedAlbum.tracks[index].note = nil
+                                                firestoreManager.addAlbum(updatedAlbum)
+                                            }
                                         }
                                     } label: {
                                         Label("Clear Note", systemImage: "trash")
@@ -281,16 +309,15 @@ struct SavedAlbumDetailView: View {
                             }
                         }
                         
-                        if let exactDate = formattedExactDate {
+                        if let exactDate = formattedExactDate(for: album) {
                             Text(exactDate)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 20)
-                                .padding(.bottom, 40) // Increased padding
+                                .padding(.bottom, 40)
                                 .padding(.horizontal, 20)
                         }
                     }
-                    // This is the magic macOS frosted glass material!
                     .background(.ultraThinMaterial)
                     .cornerRadius(20)
                     .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
@@ -300,7 +327,7 @@ struct SavedAlbumDetailView: View {
             }
         }
         .sheet(isPresented: $showRatingSheet) {
-            RatingSheetView(album: album)
+            RatingSheetView(albumId: album.id)
         }
         .alert("Track Note", isPresented: Binding(
             get: { trackBeingEdited != nil },
@@ -310,7 +337,11 @@ struct SavedAlbumDetailView: View {
             Button("Save") {
                 if let track = trackBeingEdited {
                     withAnimation {
-                        track.note = editingNoteText.isEmpty ? nil : editingNoteText
+                        var updatedAlbum = album
+                        if let index = updatedAlbum.tracks.firstIndex(where: { $0.id == track.id }) {
+                            updatedAlbum.tracks[index].note = editingNoteText.isEmpty ? nil : editingNoteText
+                            firestoreManager.addAlbum(updatedAlbum)
+                        }
                     }
                 }
                 trackBeingEdited = nil
@@ -322,7 +353,7 @@ struct SavedAlbumDetailView: View {
     }
     
     // Formatting Helpers
-    private var formattedYear: String {
+    private func formattedYear(for album: FirebaseAlbum) -> String {
         guard let dateString = album.releaseDateString else { return "" }
         let formatter = ISO8601DateFormatter()
         if let date = formatter.date(from: dateString) {
@@ -333,7 +364,7 @@ struct SavedAlbumDetailView: View {
         return ""
     }
     
-    private var formattedExactDate: String? {
+    private func formattedExactDate(for album: FirebaseAlbum) -> String? {
         guard let dateString = album.releaseDateString else { return nil }
         let formatter = ISO8601DateFormatter()
         if let date = formatter.date(from: dateString) {
@@ -344,7 +375,7 @@ struct SavedAlbumDetailView: View {
         return nil
     }
     
-    private var totalDurationString: String {
+    private func totalDurationString(for album: FirebaseAlbum) -> String {
         guard let totalMillis = album.totalTimeMillis else { return "" }
         let minutes = totalMillis / 60000
         return "\(minutes) mins"

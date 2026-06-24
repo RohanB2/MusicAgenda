@@ -7,9 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		406F93F2176193DF7E79F6DD /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9C504686E7BD3FFC259AA4FE /* FirebaseCore */; };
+		59105D52319F0723B721338F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 672479F09CDC9560712D0C23 /* FirebaseFirestore */; };
+		970899DB2FEB94DB00221396 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 970899DA2FEB94DB00221396 /* GoogleService-Info.plist */; };
+		970899DC2FEB94DB00221396 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 970899DA2FEB94DB00221396 /* GoogleService-Info.plist */; };
 		976FCC552FE32A0B00811595 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976FCC542FE32A0B00811595 /* WidgetKit.framework */; };
 		976FCC572FE32A0B00811595 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976FCC562FE32A0B00811595 /* SwiftUI.framework */; };
 		976FCC662FE32A0C00811595 /* MusicAgendaWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C1843842391E7B2A587FF838 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 70F9013E7E2D461F3A55A789 /* FirebaseAuth */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +42,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		970899DA2FEB94DB00221396 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		976FCC522FE32A0B00811595 /* MusicAgendaWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MusicAgendaWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		976FCC542FE32A0B00811595 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		976FCC562FE32A0B00811595 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -94,6 +100,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				406F93F2176193DF7E79F6DD /* FirebaseCore in Frameworks */,
+				C1843842391E7B2A587FF838 /* FirebaseAuth in Frameworks */,
+				59105D52319F0723B721338F /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +121,7 @@
 		97F54DD72FE0B46B00E7D6E7 = {
 			isa = PBXGroup;
 			children = (
+				970899DA2FEB94DB00221396 /* GoogleService-Info.plist */,
 				976FCC6C2FE32A2A00811595 /* MusicAgendaWidgetExtension.entitlements */,
 				97F54DE22FE0B46B00E7D6E7 /* MusicAgenda */,
 				976FCC582FE32A0B00811595 /* MusicAgendaWidget */,
@@ -173,6 +183,9 @@
 			);
 			name = "Music Agenda";
 			packageProductDependencies = (
+				9C504686E7BD3FFC259AA4FE /* FirebaseCore */,
+				70F9013E7E2D461F3A55A789 /* FirebaseAuth */,
+				672479F09CDC9560712D0C23 /* FirebaseFirestore */,
 			);
 			productName = MusicAgenda;
 			productReference = 97F54DE02FE0B46B00E7D6E7 /* Music Agenda.app */;
@@ -205,6 +218,9 @@
 			);
 			mainGroup = 97F54DD72FE0B46B00E7D6E7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E715EBEE92AB687268170D8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 97F54DE12FE0B46B00E7D6E7 /* Products */;
 			projectDirPath = "";
@@ -221,6 +237,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				970899DB2FEB94DB00221396 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,6 +245,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				970899DC2FEB94DB00221396 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +299,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rohanbatra.MusicAgenda.MusicAgendaWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -315,6 +334,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rohanbatra.MusicAgenda.MusicAgendaWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -566,6 +586,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E715EBEE92AB687268170D8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		672479F09CDC9560712D0C23 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E715EBEE92AB687268170D8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		70F9013E7E2D461F3A55A789 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E715EBEE92AB687268170D8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		9C504686E7BD3FFC259AA4FE /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E715EBEE92AB687268170D8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 97F54DD82FE0B46B00E7D6E7 /* Project object */;
 }
